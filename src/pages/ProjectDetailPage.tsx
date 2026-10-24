@@ -587,6 +587,26 @@ export const ProjectDetailPage: React.FC = () => {
                 Reposition the core codebase towards a fresh use-case or audience while preserving the original historical post-mortem intact.
               </p>
 
+              {/* Side-by-side Baseline: Original Project State (Preserved) */}
+              <div className="mt-4 p-3 rounded-xl bg-surface-2/70 border border-border font-mono text-[11px] space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-bold text-amber tracking-wider">
+                    Original Baseline (Before)
+                  </span>
+                  <span className="text-[10px] text-muted">{project.category}</span>
+                </div>
+                <p className="text-muted leading-tight">
+                  <strong className="text-text">Scope: </strong>
+                  {project.description}
+                </p>
+                {project.autopsy?.whyStopped && (
+                  <p className="text-muted leading-tight">
+                    <strong className="text-text">Why it Stalled: </strong>
+                    {project.autopsy.whyStopped}
+                  </p>
+                )}
+              </div>
+
               <div className="mt-4 space-y-3 pt-3 border-t border-border font-mono text-xs">
                 <div>
                   <span className="text-[10px] uppercase text-muted block mb-1">

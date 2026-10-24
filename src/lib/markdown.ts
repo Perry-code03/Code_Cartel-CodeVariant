@@ -138,6 +138,36 @@ export function generateProjectMarkdown(
   return lines.join('\n');
 }
 
+export function generateAllProjectsMarkdownSummary(
+  projects: Project[],
+  components: SalvagedComponent[] = []
+): string {
+  const lines: string[] = [];
+  lines.push('# The Project Graveyard — Master Post-Mortem Digest');
+  lines.push(`*Generated on ${new Date().toISOString().split('T')[0]} | Total Projects: ${projects.length} | Salvaged Components: ${components.length}*`);
+  lines.push('');
+  lines.push('## Necropolis Vault Overview');
+  lines.push('| Project | Status | Category | Completion | Resurrection Score |');
+  lines.push('|---|---|---|---|---|');
+
+  for (const p of projects) {
+    const score = p.autopsy?.score !== undefined ? `${p.autopsy.score}/100` : 'Not evaluated';
+    lines.push(`| ${p.name} | \`${p.status.toUpperCase()}\` | ${p.category} | ${p.completion}% | ${score} |`);
+  }
+  lines.push('');
+
+  lines.push('## Detailed Project Post-Mortems');
+  for (const p of projects) {
+    const projectComps = components.filter((c) => c.projectId === p.id);
+    lines.push(generateProjectMarkdown(p, projectComps, []));
+    lines.push('');
+    lines.push('---');
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
 export function downloadMarkdownFile(filename: string, content: string) {
   const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
