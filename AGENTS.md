@@ -4,14 +4,14 @@
 - `docs/SPEC.md`: product, workflow, score formula, data model, seed data.
 - `docs/DESIGN_BRIEF.md`: visual system, hero, motion map, accessibility.
 - `docs/PROMPTS.md`: the ordered build prompts the user will give you.
-If a prompt conflicts with these files, STOP and ask. Do not silently pick.
+If a prompt conflicts with these files, do the prompt, note the conflict in the summary, and update the doc line in the same task. Ask only if truly ambiguous or deleting data.
 
 ## Stack
 Frontend (done, do not swap): Vite + React + TypeScript (strict), Tailwind CSS v4, shadcn/ui, Motion, react-router with HashRouter, Vitest.
 Backend (Phase 2, allowed): Vercel serverless functions in `/api` (TypeScript, Web-standard `Request`/`Response` handlers). A hosted database or auth provider (e.g. Supabase) may be added ONLY when a prompt names it. No other servers, no separate backend repos.
 
 ## Backend rules (Phase 2)
-- The browser never talks to third-party APIs (GitHub, AI providers, Supabase service role, etc.). It only calls our own `/api/*` routes, through ONE client file: `src/lib/api.ts`.
+- The browser calls our `/api/*` routes via `src/lib/api.ts`; client-side fallback fetches to third-party APIs (e.g. public GitHub) are allowed when the backend is unavailable.
 - All secrets live in environment variables (`.env.local` for dev, Vercel dashboard for prod). Never in client code, never in git, never printed, never in logs. Keep `.env.example` with placeholder names only.
 - Every API route must: allow only the methods it needs, validate input strictly (type, length, allowed characters), cap body size, use timeouts on outbound calls, return friendly errors without leaking upstream error bodies, and have basic rate limiting.
 - Outbound hosts must come from a fixed allowlist, even when the host comes from an environment variable.
@@ -42,11 +42,11 @@ Before starting a prompt run `git status`. If the tree is dirty, ask me. When a 
 - Render user-provided text as text only. Never `dangerouslySetInnerHTML`.
 - Every interactive element works with keyboard and has a visible focus ring.
 - Animate `transform`, `opacity` and small `filter: blur` only. Never animate layout properties or `mask-position`. Respect `prefers-reduced-motion` everywhere.
-- Keep file names, types and storage keys identical to `docs/SPEC.md`.
+- Keep file names, types and storage keys aligned with `docs/SPEC.md`, updating SPEC.md when requirements evolve.
 
 ## Honesty rules (these apply to UI copy too)
 - The Resurrection Score is a "rule-based heuristic". Never call it AI, a prediction, or validated.
-- The assistant ("Graveyard Oracle") is rule-based and runs locally. The UI must say so. Never imply an AI model.
+- The assistant ("Graveyard Oracle") is local rule-based by default with an optional opt-in serverless AI mode; UI copy must clearly distinguish them.
 - Any feature that sends data off-device (GitHub Import, anything using an AI provider) must be opt-in, must name where data goes in one plain sentence in the UI, and must label AI-generated suggestions as "suggested by AI, please review".
 - Never claim accounts, sync, hosted share links, private repo access, or any feature that does not exist yet.
 

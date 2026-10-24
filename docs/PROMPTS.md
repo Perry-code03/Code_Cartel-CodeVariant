@@ -186,7 +186,7 @@ Done when: exporting email-worker gives a complete, readable .md file.
 
 ## P12: Graveyard Oracle (rule-based assistant) with thinking, streaming and dot-loader effects
 ```
-Read AGENTS.md honesty rules and DESIGN_BRIEF section 7 (ORIGINAL items). Task: a local assistant that answers questions about the user's graveyard. It is NOT an AI model; the panel header and empty state must say "Rule-based assistant. Runs locally. No AI model, no data leaves your browser."
+Read AGENTS.md honesty rules and DESIGN_BRIEF section 7 (ORIGINAL items). Task: an assistant that runs locally by default with an optional opt-in AI mode; UI copy must clearly distinguish them.
 Logic in src/lib/oracle.ts (pure, tested): intent matching via keywords/regex plus fuzzy project-name matching. Intents: summary of my graveyard; which project to revive first (highest score among non-archived, with reasoning); why did <project> stall (from its autopsy); what can I salvage (components list); compare <A> and <B>; show a 3-day plan for <project> (uses phoenix.ts); how is the score calculated; help. Unknown questions get a friendly fallback listing what it can do. Answers are built from real store data and may include links to projects.
 UI: floating button + panel (or /oracle page), suggested-question chips, message list with aria-live="polite", input with Enter to send.
 Effects (build ORIGINAL implementations with Motion/CSS; do NOT fetch or copy transitions.dev Pro code):
@@ -211,7 +211,7 @@ Read AGENTS.md and DESIGN_BRIEF section 8. Task: quality pass; fix real problems
 5. Add a Settings/Data menu: Restore demo data (confirm), Export/Import JSON, "Clear everything" (double confirm, explain data cannot be recovered).
 6. Add an end-to-end test (Playwright, only if it installs cleanly; ask before installing) or, if not, a written manual checklist in docs/QA.md covering: Bury, Autopsy, Score, Choose path (all four), Salvage, Roadmap, Export, Refresh persistence, Reset demo.
 7. `npm run build` then `npm run preview`; load it and click through the core loop; report results honestly. Write docs/DEMO.md: 5-minute demo script following Bury, Autopsy, Score, Path, Salvage, Roadmap, Export, plus a fallback plan if a feature fails.
-8. Update README.md: overview, prerequisites, install/dev/build/test commands, folder structure, features, data model summary, score formula, storage strategy, known limitations (local-only, no repo analysis, no sync, no AI), troubleshooting.
+8. Update README.md: overview, prerequisites, install/dev/build/test commands, folder structure, features, data model summary, score formula, storage strategy, limitations (local-first, optional AI/import), troubleshooting.
 Report: what you fixed, what you could not verify, and a list of known issues.
 ```
 Done when: build + preview clean, core loop works on the production build.

@@ -107,7 +107,7 @@ Audit completed against `docs/FEATURES.md`, `docs/SPEC.md`, and `docs/DESIGN_BRI
 
 ### Section 9: The Graveyard Oracle (Local Assistant)
 - [x] Floating panel / assistant drawer accessible from global navigation (`src/components/layout/Shell.tsx:69`, `src/components/oracle/OraclePanel.tsx`)
-- [x] Explicit header stating it is a rule-based assistant running 100% locally with zero cloud AI or data leakage (`src/components/oracle/OraclePanel.tsx:65-79`)
+- [x] Explicit header stating it is local-first with an optional opt-in cloud AI mode (`src/components/oracle/OraclePanel.tsx:65-79`)
 - [x] Deterministic query matching for 7+ intents (`src/lib/oracle.ts:queryGraveyardOracle`)
 - [x] Suggested quick-prompt chips for instant queries (`src/components/oracle/OraclePanel.tsx:135-154`)
 - [x] Interactive chat history with screen-reader friendly `aria-live="polite"` (`src/components/oracle/OraclePanel.tsx:86`)

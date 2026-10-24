@@ -35,7 +35,7 @@ Atmosphere: very subtle dot grid, one soft violet radial glow behind the hero, f
 - Small labels: Inter or Mono, 11-12px, uppercase, letter-spacing 0.08em, never for long text.
 - Use real typographic characters (curly quotes, en/em dashes, ellipsis), tabular numerals for scores and percentages.
 - Fluid scale with clamp(): display 3.25rem to 6.5rem, h1 2.25 to 3.5rem, h2 1.5 to 2rem.
-Fonts from fontshare.com were not used: its catalog could not be read and licensing was not verified. The slide-specified pair stays.
+Fonts can be updated or added (e.g. from Fontsource) when requested, verifying licensing with npm view.
 Before installing any font package AGY runs `npm view <pkg>` and reports the license (expect OFL).
 
 ## 4. Layout system
@@ -57,7 +57,7 @@ Hero must work with seeded data on first load and must not block access: sidebar
 Tombstone card (arched top via CSS clip or border-radius, R.I.P. label, name, status chip, completion bar, score ring with number, stack pills, age, pin button). Filter pills (multi-select, count badge, clear all). Score ring + factor breakdown. Wizard stepper. Path cards for the four paths. Roadmap vertical timeline with "Dead to Active" progress rail. Component card with type icon, code preview, copy button. Empty states with a small illustration and one action. 404 page with an epitaph ("Here lies this page.").
 
 ## 7. Motion map
-Use only these. Source: transitions.dev FREE core set (adapt, keep attribution comment) unless marked ORIGINAL.
+Base transitions use transitions.dev FREE core set; redesigns, new animations, and parallax are allowed when requested.
 | Where | Transition |
 |---|---|
 | Status chip / button label / score label changes | text-states-swap |

@@ -103,7 +103,7 @@
 
 ## Section 9: The Graveyard Oracle (Local Assistant)
 - [ ] Floating panel / assistant drawer accessible from global navigation
-- [ ] Explicit header stating it is a rule-based assistant running 100% locally with zero cloud AI or data leakage
+- [ ] Explicit header stating it is local-first with an optional opt-in cloud AI mode
 - [ ] Deterministic query matching for: "which project to revive first", "summary of graveyard", "why did project stall", "what can I salvage", "3-day plan for project", "how is score calculated", and "help"
 - [ ] Suggested quick-prompt chips for instant queries
 - [ ] Interactive chat history with screen-reader friendly `aria-live="polite"`
@@ -127,7 +127,7 @@
 ## Section 11: Future Features & Data Management
 - [x] Downloadable JSON data backup (Export all data)
 - [x] JSON data restore (Import backup with schema validation and confirmation prompt)
-- [ ] Out of scope: GitHub repository analysis/import (do not build)
+- [x] GitHub repository analysis/import (built via /api/analyze-repo)
 - [ ] Out of scope: User accounts and cloud synchronization (do not build)
 - [ ] Out of scope: Public hosted marketplace (do not build)
-- [ ] Out of scope: Paid LLM API integration (do not build)
+- [x] Optional LLM API integration (built via /api routes)
