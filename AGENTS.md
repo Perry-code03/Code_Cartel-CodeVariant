@@ -8,7 +8,7 @@ If a prompt conflicts with these files, STOP and ask. Do not silently pick.
 
 ## Stack (fixed, do not swap)
 Vite + React + TypeScript (strict), Tailwind CSS v4 (`@tailwindcss/vite`), shadcn/ui, Motion (`import ... from "motion/react"`), react-router with HashRouter, localStorage, Vitest.
-No backend. No paid API. No secrets. No network calls at runtime. No analytics.
+One serverless function (`api/analyze-repo.ts`) is allowed. It is the ONLY place that makes network calls (GitHub API and xAI API). The browser only calls our own `/api/analyze-repo`. Secrets live in environment variables, never in client code, never in git. No analytics.
 
 ## The user
 A beginner on Windows (PowerShell). After each task, explain in plain words what you did and define any new technical term in one line.
@@ -35,7 +35,8 @@ Before starting a prompt run `git status`. If the tree is dirty, ask me. When a 
 ## Honesty rules (these apply to UI copy too)
 - The Resurrection Score is a "rule-based heuristic". Never call it AI, a prediction, or validated.
 - The assistant ("Graveyard Oracle") is rule-based and runs locally. The UI must say so. Never imply an AI model.
-- Never claim repo import, GitHub analysis, sync, accounts or hosted share links. None exist.
+- GitHub Import is the only feature that sends data off-device: it sends the public repo URL to our function, and repo metadata/README excerpts to xAI. The UI must say this. The Resurrection Score and the Oracle remain rule-based and local; never describe them as AI.
+- Never claim private repo support, accounts, sync, or hosted share links. None exist.
 
 ## Third-party motion (transitions.dev)
 Use only the FREE core transitions. Do NOT fetch, scrape or copy Pro-only recipes. Keep a comment `/* Based on transitions.dev (free core set) */` above adapted code.

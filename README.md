@@ -4,7 +4,7 @@
 
 A client-side cyberpunk crypt and diagnostic sanctuary for developers to file away stalled side projects, conduct objective post-mortem autopsies, compute a heuristic **Resurrection Score**, and either trigger a focused 72-hour revival sprint or harvest battle-tested components into a personal Salvage Market.
 
-Built 100% in the browser with **React 19**, **TypeScript**, **Tailwind CSS v4**, **Motion**, and **localStorage**. Zero cloud dependencies, zero external telemetry, zero paid APIs.
+Built primarily in the browser with **React 19**, **TypeScript**, **Tailwind CSS v4**, **Motion**, and **localStorage**. Zero external telemetry, no user accounts, and all data stored locally by default.
 
 ---
 
@@ -113,4 +113,6 @@ Open [http://localhost:5173](http://localhost:5173) to enter the Necropolis Vaul
 ---
 
 ## 🔒 Privacy & Local-First Philosophy
-Project Graveyard strictly runs client-side inside the user's browser storage (`localStorage`). No tracking pixels, no telemetry, no cookies, and no cloud-hosted AI APIs. Your code post-mortems and salvaged snippets remain entirely private on your device.
+Project Graveyard runs client-side inside the user's browser storage (`localStorage`) with no tracking pixels, no telemetry, no cookies, and no accounts or sync. Your project post-mortems and salvaged snippets remain entirely private on your device.
+
+**Opt-In GitHub Import Exception**: If you optionally use the "Import from GitHub" feature in the burial dialog, the public repository URL is sent to our serverless endpoint (`api/analyze-repo.ts`), which queries public GitHub API metadata and passes public excerpts to xAI Grok to normalize suggestions. Nothing is stored on our server, private repositories are not supported, and you review and apply all suggestions manually.

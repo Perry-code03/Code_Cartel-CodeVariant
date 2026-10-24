@@ -103,3 +103,13 @@ export interface AppData {
   components: SalvagedComponent[];
   events: RoadmapEvent[];
 }
+
+export interface RepoAnalysis {
+  name: string;
+  description: string;
+  stack: string[];
+  category: Category;
+  lastPushedAt?: string;
+  source: 'github+ai' | 'github-only';
+  repoUrl: string;
+}
