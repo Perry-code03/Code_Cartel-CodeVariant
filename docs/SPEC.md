@@ -112,7 +112,9 @@ Per project: title, status, completion, score + band + factor breakdown, autopsy
 
 ## 12. Backend roadmap (Phase 2)
 1. **GitHub Import (built)**: Opt-in public repository intake via `/api/analyze-repo`, with deterministic manifest analysis and optional OpenAI-compatible AI normalization (Groq, xAI).
-2. **Later backend extensions [OPT]**: Optional cloud backup/sync [OPT], hosted authenticated workspace [OPT], component team sharing [OPT]. Claim nothing until built.
+2. **Graveyard Oracle AI Mode (built)**: Opt-in AI diagnostic advisor via `/api/oracle-chat` with safe heuristic fallbacks and transparent labeling.
+3. **Autopsy AI Diagnostic Assist (built)**: Opt-in post-mortem failure suggestions via `/api/suggest-autopsy` based on project stack with deterministic heuristic fallbacks.
+4. **Later backend extensions [OPT]**: Optional cloud backup/sync [OPT], hosted authenticated workspace [OPT], component team sharing [OPT]. Claim nothing until built.
 
 ## 13. Out of scope (do not build, do not imply)
 Private repo analysis, user accounts, cloud database sync, public marketplace, hosted share links, payments.

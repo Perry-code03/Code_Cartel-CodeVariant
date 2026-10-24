@@ -1,8 +1,11 @@
-import { GraveyardProjectSummary, OracleAiResponse, RepoAnalysis } from '@/types';
+import { AutopsySuggestion, GraveyardProjectSummary, OracleAiResponse, RepoAnalysis } from '@/types';
+import { generateLocalAutopsyFallback, ProjectContextInput } from '@/lib/autopsy-ai';
+import { generateLocalRepoFallback } from '@/lib/github';
 
 /**
  * Calls our serverless function /api/analyze-repo with the provided repository URL.
  * Maps network or server errors to friendly, human-readable error messages.
+ * Gracefully falls back locally when backend is unreachable or on a static host.
  */
 export async function analyzeRepo(url: string): Promise<RepoAnalysis> {
   let response: Response;
@@ -15,8 +18,9 @@ export async function analyzeRepo(url: string): Promise<RepoAnalysis> {
       body: JSON.stringify({ url }),
     });
   } catch {
-    throw new Error(
-      'Unable to reach the analysis service. If running locally, verify your local dev server or vercel dev is running.'
+    return generateLocalRepoFallback(
+      url,
+      'Unable to reach backend service. Extracted repository name from URL.'
     );
   }
 
@@ -24,7 +28,12 @@ export async function analyzeRepo(url: string): Promise<RepoAnalysis> {
   try {
     data = await response.json();
   } catch {
-    throw new Error('Received an unparseable response from the server.');
+    return generateLocalRepoFallback(
+      url,
+      response.status === 404
+        ? 'Backend analysis service (/api/analyze-repo) was not found (404). If hosted on GitHub Pages, serverless functions are not supported—deploy on Vercel or enter project details manually.'
+        : 'Received an unparseable response from the server. Using local repository details from URL.'
+    );
   }
 
   if (!response.ok) {
@@ -88,4 +97,46 @@ export async function chatWithOracle(
   }
 
   return data as OracleAiResponse;
+}
+
+/**
+ * Calls our serverless function /api/suggest-autopsy with the project metadata.
+ * Returns either the AI-enhanced suggestion or a deterministic heuristic fallback.
+ */
+export async function suggestAutopsy(
+  project: ProjectContextInput
+): Promise<AutopsySuggestion> {
+  let response: Response;
+  try {
+    response = await fetch('/api/suggest-autopsy', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ project }),
+    });
+  } catch {
+    return generateLocalAutopsyFallback(project);
+  }
+
+  let data: unknown;
+  try {
+    data = await response.json();
+  } catch {
+    return generateLocalAutopsyFallback(project);
+  }
+
+  if (!response.ok) {
+    const errorObj = data as { error?: string; notice?: string };
+    const fallback = generateLocalAutopsyFallback(project);
+    return {
+      ...fallback,
+      notice:
+        errorObj?.notice ||
+        errorObj?.error ||
+        'Diagnostic request failed. Showing rule-based suggestions.',
+    };
+  }
+
+  return data as AutopsySuggestion;
 }

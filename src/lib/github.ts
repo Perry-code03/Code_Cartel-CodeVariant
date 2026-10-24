@@ -434,3 +434,26 @@ export function validateAnalysisResult(raw: unknown): RepoAnalysis | null {
     notice,
   };
 }
+
+/**
+ * Creates a deterministic local fallback RepoAnalysis when the backend /api/analyze-repo
+ * service is unreachable, offline, or running on a static host (like GitHub Pages).
+ */
+export function generateLocalRepoFallback(
+  url: string,
+  notice?: string
+): RepoAnalysis {
+  const parsed = parseGithubUrl(url);
+  const repoName = parsed ? parsed.repo : 'Imported Project';
+  return {
+    name: repoName,
+    description: '',
+    stack: [],
+    category: 'Other',
+    source: 'github-only',
+    repoUrl: url,
+    notice:
+      notice ||
+      'Backend service (/api/analyze-repo) is not available on static hosts (like GitHub Pages). Pre-filled repository name from URL. Deploy to Vercel for automated GitHub metadata & AI analysis.',
+  };
+}

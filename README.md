@@ -13,12 +13,12 @@ Built primarily in the browser with **React 19**, **TypeScript**, **Tailwind CSS
 | Module | Route | Purpose | Key Capabilities |
 |---|---|---|---|
 | **Necropolis Vault** | `/vault` | Crypt Index | Tombstone grid with completion meters, age brackets, Resurrection Score dials, stack filters, and project pinning ("haunt" particle burst). |
-| **Autopsy Suite** | `/autopsy`, `/projects/:id/autopsy` | Post-Mortem Diagnostics | 5-step diagnostic wizard assessing completion, motivation, hours, and blockers with automated stop-category heuristics. |
+| **Autopsy Suite** | `/autopsy`, `/projects/:id/autopsy` | Post-Mortem Diagnostics | 5-step diagnostic wizard assessing completion, motivation, hours, and blockers with opt-in AI post-mortem failure diagnostics and automated heuristics. |
 | **Resurrection Engine** | `/engine`, `/project/:id?tab=engine` | Revival Pathways | 4 strategic paths: **Phoenix Protocol** (72h sprint plan), **Pivot Path** (side-by-side baseline reframe), **Salvage Yard**, and **Peaceful Archive**. |
 | **Component Salvage Market** | `/market` *(or `/salvage`)* | Reusable Part Catalog | Private local library of code snippets, SQL schemas, and UI blocks with syntax-safe line numbers, copy-to-clipboard, and project linkage. |
 | **Lifecycle Roadmap** | `/roadmap` | Append-Only Audit Trail | Chronological event log recording burials, autopsies, and sprint completions. |
 | **Data Export & Recovery** | `/export` | Full Portability | JSON backup download, schema-verified archive restoration, and markdown post-mortem summary generator. |
-| **Graveyard Oracle** | *Global Drawer* | Rule-Based Local Assistant | Deterministic NLP matcher for 7+ query intents with Matrix Dot Loader, Thinking States shimmer, and Streaming Text. |
+| **Graveyard Oracle** | *Global Drawer* | Diagnostic Assistant | Dual-mode assistant with local rule-based heuristic and opt-in AI mode (Groq/xAI) with streaming text and follow-up prompts. |
 
 ---
 

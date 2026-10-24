@@ -134,3 +134,16 @@ export interface OracleAiResponse {
   fallback?: boolean;
   notice?: string;
 }
+
+export interface AutopsySuggestion {
+  whatWasBuilt?: string;
+  whatBroke: string;
+  whyStopped: string;
+  stopCategory: StopCategory;
+  suggestedUsefulComponents?: number;
+  scopeClarity?: Rating;
+  blockerSeverity?: Rating;
+  source: 'ai' | 'heuristic';
+  aiProviderName?: string;
+  notice?: string;
+}

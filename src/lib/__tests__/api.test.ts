@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { analyzeRepo, chatWithOracle } from '../api';
+import { analyzeRepo, chatWithOracle, suggestAutopsy } from '../api';
 
 describe('analyzeRepo in src/lib/api.ts', () => {
   const originalFetch = globalThis.fetch;
@@ -45,12 +45,29 @@ describe('analyzeRepo in src/lib/api.ts', () => {
     );
   });
 
-  it('throws friendly network error message when fetch fails', async () => {
+  it('falls back to local repo extraction with notice when fetch fails', async () => {
     globalThis.fetch = vi.fn().mockRejectedValue(new Error('Failed to fetch'));
 
-    await expect(analyzeRepo('https://github.com/test/repo')).rejects.toThrow(
-      'Unable to reach the analysis service'
-    );
+    const result = await analyzeRepo('https://github.com/test/repo');
+    expect(result.name).toBe('repo');
+    expect(result.source).toBe('github-only');
+    expect(result.notice).toContain('Unable to reach backend service');
+  });
+
+  it('falls back to local repo extraction with notice when server returns unparseable HTML (e.g. static hosting on GitHub Pages)', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      json: async () => {
+        throw new Error('Unexpected token < in JSON at position 0');
+      },
+    } as unknown as Response);
+
+    const result = await analyzeRepo('https://github.com/facebook/react');
+    expect(result.name).toBe('react');
+    expect(result.source).toBe('github-only');
+    expect(result.notice).toContain('GitHub Pages');
   });
 });
 
@@ -108,5 +125,52 @@ describe('chatWithOracle in src/lib/api.ts', () => {
     expect(result.fallback).toBe(true);
     expect(result.notice).toContain('Unable to reach the Oracle backend service');
     expect(result.source).toBe('local');
+  });
+});
+
+describe('suggestAutopsy in src/lib/api.ts', () => {
+  const originalFetch = globalThis.fetch;
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('returns AutopsySuggestion on successful 200 response', async () => {
+    const mockSuggestion = {
+      whatBroke: 'Race condition occurred during token refresh.',
+      whyStopped: 'Solo developer burnout while debugging distributed lock.',
+      stopCategory: 'burnout' as const,
+      source: 'ai' as const,
+      aiProviderName: 'Groq',
+    };
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockSuggestion,
+    } as Response);
+
+    const result = await suggestAutopsy({ name: 'legacy-auth' });
+    expect(result.whatBroke).toBe(mockSuggestion.whatBroke);
+    expect(result.source).toBe('ai');
+    expect(result.aiProviderName).toBe('Groq');
+  });
+
+  it('returns deterministic fallback on network failure', async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network offline'));
+
+    const result = await suggestAutopsy({
+      name: 'legacy-auth',
+      stack: ['Node.js', 'PostgreSQL'],
+      category: 'API / Backend',
+    });
+
+    expect(result.source).toBe('heuristic');
+    expect(result.whatBroke).toContain('legacy-auth');
+    expect(result.stopCategory).toBe('technical');
   });
 });

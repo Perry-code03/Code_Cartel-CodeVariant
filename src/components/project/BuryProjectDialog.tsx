@@ -164,6 +164,10 @@ export const BuryProjectDialog: React.FC<BuryProjectDialogProps> = ({
     } catch (err: unknown) {
       setImportError(err instanceof Error ? err.message : 'Failed to analyze repository.');
       triggerImportShake();
+      const parsed = parseGithubUrl(trimmedUrl);
+      if (parsed && !name.trim()) {
+        setName(parsed.repo);
+      }
     } finally {
       setIsAnalyzing(false);
     }

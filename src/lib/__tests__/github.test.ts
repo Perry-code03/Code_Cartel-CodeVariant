@@ -5,6 +5,7 @@ import {
   detectStackFromManifests,
   suggestCategory,
   validateAnalysisResult,
+  generateLocalRepoFallback,
 } from '../github';
 
 describe('github.ts - parseGithubUrl', () => {
@@ -355,5 +356,22 @@ describe('github.ts - validateAnalysisResult', () => {
     expect(validateAnalysisResult(undefined)).toBeNull();
     expect(validateAnalysisResult(42)).toBeNull();
     expect(validateAnalysisResult('{ broken json')).toBeNull();
+  });
+});
+
+describe('github.ts - generateLocalRepoFallback', () => {
+  it('extracts repository name from GitHub URL into fallback RepoAnalysis', () => {
+    const fallback = generateLocalRepoFallback('https://github.com/facebook/react');
+    expect(fallback.name).toBe('react');
+    expect(fallback.category).toBe('Other');
+    expect(fallback.source).toBe('github-only');
+    expect(fallback.repoUrl).toBe('https://github.com/facebook/react');
+    expect(fallback.notice).toContain('Backend service');
+  });
+
+  it('uses custom notice when provided', () => {
+    const fallback = generateLocalRepoFallback('https://github.com/acme/tool', 'Custom static warning');
+    expect(fallback.name).toBe('tool');
+    expect(fallback.notice).toBe('Custom static warning');
   });
 });

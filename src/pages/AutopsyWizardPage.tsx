@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore, useProject } from '@/store/StoreProvider';
-import { StopCategory, Rating } from '@/types';
+import { StopCategory, Rating, AutopsySuggestion } from '@/types';
 import { computeResurrectionScore, ScoreResult } from '@/lib/score';
 import { recommendRevivalPath, suggestStopCategory } from '@/lib/recommend';
 import { validateAutopsy } from '@/lib/validation';
+import { suggestAutopsy } from '@/lib/api';
 import { useShake } from '@/components/motion/useShake';
 import {
   Activity,
@@ -18,6 +19,8 @@ import {
   Compass,
   AlertCircle,
   Sparkles,
+  X,
+  Check,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -55,6 +58,53 @@ export const AutopsyWizardPage: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [computedResult, setComputedResult] = useState<ScoreResult | null>(null);
   const { shakeClass, triggerShake } = useShake();
+
+  // AI Diagnostic Suggestions
+  const [suggestion, setSuggestion] = useState<AutopsySuggestion | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [appliedNotice, setAppliedNotice] = useState<string | null>(null);
+
+  const handleFetchAiSuggestions = async () => {
+    if (!project || isAnalyzing) return;
+    setIsAnalyzing(true);
+    setAppliedNotice(null);
+    try {
+      const res = await suggestAutopsy({
+        name: project.name,
+        description: project.description,
+        stack: project.stack,
+        category: project.category,
+        completion: project.completion,
+        whatWasBuilt: whatWasBuilt.trim() || undefined,
+      });
+      setSuggestion(res);
+    } catch {
+      // Handled in api.ts
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleApplySuggestions = () => {
+    if (!suggestion) return;
+    setWhatBroke(suggestion.whatBroke);
+    setWhyStopped(suggestion.whyStopped);
+    setStopCategory(suggestion.stopCategory);
+    if ((!whatWasBuilt || whatWasBuilt.trim().length < 10) && suggestion.whatWasBuilt) {
+      setWhatWasBuilt(suggestion.whatWasBuilt);
+    }
+    if (suggestion.blockerSeverity) {
+      setBlockerSeverity(String(suggestion.blockerSeverity));
+    }
+    if (suggestion.scopeClarity) {
+      setScopeClarity(String(suggestion.scopeClarity));
+    }
+    if (suggestion.suggestedUsefulComponents !== undefined) {
+      setUsefulComponents(String(suggestion.suggestedUsefulComponents));
+    }
+    setSuggestion(null);
+    setAppliedNotice('AI suggestions applied to form. You can review and edit each field below.');
+  };
 
   // Load existing autopsy if present
   useEffect(() => {
@@ -227,6 +277,150 @@ export const AutopsyWizardPage: React.FC = () => {
         </div>
       )}
 
+      {/* AI Diagnostic Assist Card / Active Suggestion */}
+      {step < 5 && (
+        <div className="space-y-3">
+          {appliedNotice && (
+            <div className="p-3 rounded-xl bg-acid/10 border border-acid/30 text-acid text-xs font-mono flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Check size={14} className="shrink-0" />
+                <span>{appliedNotice}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAppliedNotice(null)}
+                className="text-muted hover:text-text p-1"
+                aria-label="Dismiss notice"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          )}
+
+          {suggestion ? (
+            <div className="p-5 rounded-2xl bg-surface border border-violet/40 shadow-lg space-y-3 font-mono text-xs">
+              <div className="flex items-center justify-between border-b border-border/50 pb-2.5">
+                <div className="flex items-center gap-1.5 text-violet-soft">
+                  <Sparkles size={15} />
+                  <span className="font-bold">
+                    {suggestion.source === 'ai'
+                      ? `Suggested by AI (${suggestion.aiProviderName || 'AI'}), please review`
+                      : 'Suggested by rule-based heuristic'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSuggestion(null)}
+                  className="text-muted hover:text-text p-1 rounded hover:bg-surface-2"
+                  aria-label="Dismiss suggestion"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              {suggestion.notice && (
+                <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs">
+                  {suggestion.notice}
+                </div>
+              )}
+
+              <div className="space-y-3 text-xs leading-relaxed">
+                {suggestion.whatWasBuilt && (!whatWasBuilt || whatWasBuilt.trim().length < 10) && (
+                  <div className="p-2.5 rounded-lg bg-surface-2/60 border border-border">
+                    <span className="text-muted font-bold block mb-0.5">Suggested Built Scope:</span>
+                    <span className="text-text">{suggestion.whatWasBuilt}</span>
+                  </div>
+                )}
+                <div className="p-2.5 rounded-lg bg-surface-2/60 border border-border">
+                  <span className="text-muted font-bold block mb-0.5">Suggested What Broke (Failure Point):</span>
+                  <span className="text-text">{suggestion.whatBroke}</span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-surface-2/60 border border-border">
+                  <span className="text-muted font-bold block mb-0.5">Suggested Why Momentum Died:</span>
+                  <span className="text-text">{suggestion.whyStopped}</span>
+                </div>
+                <div className="flex flex-wrap gap-2 text-[11px]">
+                  <span className="px-2.5 py-1 rounded bg-surface-2 border border-border text-text">
+                    Stop Category: <strong className="text-acid uppercase">{suggestion.stopCategory}</strong>
+                  </span>
+                  {suggestion.blockerSeverity && (
+                    <span className="px-2.5 py-1 rounded bg-surface-2 border border-border text-text">
+                      Blocker: <strong>{suggestion.blockerSeverity} / 5</strong>
+                    </span>
+                  )}
+                  {suggestion.scopeClarity && (
+                    <span className="px-2.5 py-1 rounded bg-surface-2 border border-border text-text">
+                      Scope clarity: <strong>{suggestion.scopeClarity} / 5</strong>
+                    </span>
+                  )}
+                  {suggestion.suggestedUsefulComponents !== undefined && (
+                    <span className="px-2.5 py-1 rounded bg-surface-2 border border-border text-text">
+                      Useful parts: <strong>{suggestion.suggestedUsefulComponents}</strong>
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-[10px] text-muted pt-1">
+                Opt-in: Project name, stack, and category are sent to your configured AI provider. No data is stored.
+              </p>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setSuggestion(null)}
+                  className="font-mono text-xs border-border text-muted hover:text-text"
+                >
+                  Dismiss
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleApplySuggestions}
+                  className="bg-acid text-bg hover:bg-acid/90 font-mono text-xs font-bold"
+                >
+                  Apply to Form
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="p-3.5 rounded-xl bg-violet/10 border border-violet/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-1.5 rounded-lg bg-violet/20 border border-violet/40 text-violet-soft shrink-0">
+                  <Sparkles size={16} />
+                </div>
+                <div>
+                  <h3 className="font-mono text-xs font-bold text-text flex items-center gap-1.5">
+                    AI Post-Mortem Diagnostic Assist
+                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-violet/20 border border-violet/40 text-violet-soft">
+                      OPT-IN
+                    </span>
+                  </h3>
+                  <p className="text-[11px] font-mono text-muted mt-0.5">
+                    Stuck diagnosing? Let AI analyze {project.name}&apos;s stack to suggest what went wrong and why momentum stalled.
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                onClick={handleFetchAiSuggestions}
+                disabled={isAnalyzing}
+                className="bg-violet hover:bg-violet/90 text-white font-mono text-xs shrink-0 self-start sm:self-auto"
+              >
+                {isAnalyzing ? (
+                  <>Diagnosing Architecture...</>
+                ) : (
+                  <>
+                    <Sparkles size={13} className="mr-1.5" />
+                    Auto-Suggest with AI
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Step 1: What Was Built */}
       {step === 1 && (
         <div className="p-6 rounded-2xl bg-surface border border-border space-y-4">
@@ -265,9 +459,20 @@ export const AutopsyWizardPage: React.FC = () => {
       {/* Step 2: What Broke */}
       {step === 2 && (
         <div className="p-6 rounded-2xl bg-surface border border-border space-y-4">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="text-amber" size={20} />
-            <h2 className="font-mono text-lg font-bold text-text">02. What Broke?</h2>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="text-amber" size={20} />
+              <h2 className="font-mono text-lg font-bold text-text">02. What Broke?</h2>
+            </div>
+            <button
+              type="button"
+              onClick={handleFetchAiSuggestions}
+              disabled={isAnalyzing}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono bg-violet/15 hover:bg-violet/25 text-violet-soft border border-violet/30 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-violet"
+            >
+              <Sparkles size={12} />
+              {isAnalyzing ? 'Diagnosing...' : 'Suggest with AI'}
+            </button>
           </div>
           <p className="text-xs text-muted font-sans">
             What was the point of friction? Was it a race condition, dependency deprecation, API schema mismatch, or performance bottleneck?
@@ -307,9 +512,20 @@ export const AutopsyWizardPage: React.FC = () => {
       {/* Step 3: Why Momentum Died */}
       {step === 3 && (
         <div className="p-6 rounded-2xl bg-surface border border-border space-y-4">
-          <div className="flex items-center gap-2">
-            <Compass className="text-violet-soft" size={20} />
-            <h2 className="font-mono text-lg font-bold text-text">03. Why Development Stopped</h2>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Compass className="text-violet-soft" size={20} />
+              <h2 className="font-mono text-lg font-bold text-text">03. Why Development Stopped</h2>
+            </div>
+            <button
+              type="button"
+              onClick={handleFetchAiSuggestions}
+              disabled={isAnalyzing}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono bg-violet/15 hover:bg-violet/25 text-violet-soft border border-violet/30 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-violet"
+            >
+              <Sparkles size={12} />
+              {isAnalyzing ? 'Diagnosing...' : 'Suggest with AI'}
+            </button>
           </div>
           <p className="text-xs text-muted font-sans">
             Be brutally honest. Was it personal burnout, shifting day-job priorities, scope creep, or lost enthusiasm?
