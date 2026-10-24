@@ -1,4 +1,4 @@
-import { CATEGORIES, Category, RepoAnalysis } from '@/types';
+import { CATEGORIES, Category, RepoAnalysis } from '../types/index.js';
 
 /**
  * Parses a GitHub repository URL into owner and repo.

@@ -45,29 +45,28 @@ describe('analyzeRepo in src/lib/api.ts', () => {
     );
   });
 
-  it('falls back to local repo extraction with notice when fetch fails', async () => {
+  it('throws friendly network error message when fetch fails', async () => {
     globalThis.fetch = vi.fn().mockRejectedValue(new Error('Failed to fetch'));
 
-    const result = await analyzeRepo('https://github.com/test/repo');
-    expect(result.name).toBe('repo');
-    expect(result.source).toBe('github-only');
-    expect(result.notice).toContain('Unable to reach backend service');
+    await expect(analyzeRepo('https://github.com/test/repo')).rejects.toThrow(
+      'Unable to reach the analysis service'
+    );
   });
 
-  it('falls back to local repo extraction with notice when server returns unparseable HTML (e.g. static hosting on GitHub Pages)', async () => {
+  it('throws friendly error when server response is not valid JSON with status and content-type', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: false,
-      status: 404,
-      statusText: 'Not Found',
+      status: 500,
+      statusText: 'Internal Server Error',
+      headers: new Headers({ 'content-type': 'text/html' }),
       json: async () => {
         throw new Error('Unexpected token < in JSON at position 0');
       },
     } as unknown as Response);
 
-    const result = await analyzeRepo('https://github.com/facebook/react');
-    expect(result.name).toBe('react');
-    expect(result.source).toBe('github-only');
-    expect(result.notice).toContain('GitHub Pages');
+    await expect(analyzeRepo('https://github.com/test/repo')).rejects.toThrow(
+      'Received an unparseable response from the server (status: 500, content-type: text/html).'
+    );
   });
 });
 

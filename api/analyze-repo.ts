@@ -4,8 +4,8 @@ import {
   normalizeStackTags,
   suggestCategory,
   validateAnalysisResult,
-} from '../src/lib/github';
-import { CATEGORIES, RepoAnalysis } from '../src/types';
+} from '../src/lib/github.js';
+import { CATEGORIES, RepoAnalysis } from '../src/types/index.js';
 
 // In-memory rate limiting: best-effort on serverless since instances may spin up or be replaced.
 const ipRequests = new Map<string, number[]>();

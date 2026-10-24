@@ -1,11 +1,9 @@
 import { AutopsySuggestion, GraveyardProjectSummary, OracleAiResponse, RepoAnalysis } from '@/types';
 import { generateLocalAutopsyFallback, ProjectContextInput } from '@/lib/autopsy-ai';
-import { generateLocalRepoFallback } from '@/lib/github';
 
 /**
  * Calls our serverless function /api/analyze-repo with the provided repository URL.
  * Maps network or server errors to friendly, human-readable error messages.
- * Gracefully falls back locally when backend is unreachable or on a static host.
  */
 export async function analyzeRepo(url: string): Promise<RepoAnalysis> {
   let response: Response;
@@ -18,9 +16,8 @@ export async function analyzeRepo(url: string): Promise<RepoAnalysis> {
       body: JSON.stringify({ url }),
     });
   } catch {
-    return generateLocalRepoFallback(
-      url,
-      'Unable to reach backend service. Extracted repository name from URL.'
+    throw new Error(
+      'Unable to reach the analysis service. If running locally, verify your local dev server or vercel dev is running.'
     );
   }
 
@@ -28,11 +25,9 @@ export async function analyzeRepo(url: string): Promise<RepoAnalysis> {
   try {
     data = await response.json();
   } catch {
-    return generateLocalRepoFallback(
-      url,
-      response.status === 404
-        ? 'Backend analysis service (/api/analyze-repo) was not found (404). If hosted on GitHub Pages, serverless functions are not supported—deploy on Vercel or enter project details manually.'
-        : 'Received an unparseable response from the server. Using local repository details from URL.'
+    const contentType = response.headers.get('content-type') || 'unknown';
+    throw new Error(
+      `Received an unparseable response from the server (status: ${response.status}, content-type: ${contentType}).`
     );
   }
 
@@ -76,9 +71,10 @@ export async function chatWithOracle(
   try {
     data = await response.json();
   } catch {
+    const contentType = response.headers.get('content-type') || 'unknown';
     return {
       fallback: true,
-      notice: 'Received an unparseable response from the server. Showing local guidance.',
+      notice: `Received an unparseable response from the server (status: ${response.status}, content-type: ${contentType}). Showing local guidance.`,
       source: 'local',
     };
   }
@@ -123,7 +119,12 @@ export async function suggestAutopsy(
   try {
     data = await response.json();
   } catch {
-    return generateLocalAutopsyFallback(project);
+    const contentType = response.headers.get('content-type') || 'unknown';
+    const fallback = generateLocalAutopsyFallback(project);
+    return {
+      ...fallback,
+      notice: `Received an unparseable response from the server (status: ${response.status}, content-type: ${contentType}). Using local heuristic diagnostics.`,
+    };
   }
 
   if (!response.ok) {

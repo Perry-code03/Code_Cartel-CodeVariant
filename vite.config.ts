@@ -109,7 +109,8 @@ function localApiDevPlugin(): Plugin {
           });
           const text = await webRes.text();
           res.end(text);
-        } catch {
+        } catch (err) {
+          console.error('[local-api-dev-plugin] Error handling API request:', err);
           res.statusCode = 500;
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ error: 'Internal error running local dev API handler' }));

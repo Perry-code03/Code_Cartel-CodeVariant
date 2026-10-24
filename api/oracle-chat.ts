@@ -1,4 +1,4 @@
-import { GraveyardProjectSummary, OracleAiResponse } from '../src/types';
+import { GraveyardProjectSummary, OracleAiResponse } from '../src/types/index.js';
 
 // In-memory rate limiting: best-effort on serverless
 const ipRequests = new Map<string, number[]>();
