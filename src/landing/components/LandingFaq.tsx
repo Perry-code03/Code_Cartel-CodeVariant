@@ -4,23 +4,23 @@ import { motion, useReducedMotion } from 'motion/react';
 const questions = [
   {
     question: 'Where is my data stored?',
-    answer: 'Projects, autopsies, scores, salvaged components, and roadmap events are saved in this browser’s local storage. They stay in this browser profile unless you choose an online feature or export them.',
+    answer: 'Projects, autopsies, scores, salvaged components, and roadmap events are saved in this browser’s local storage. They stay in this browser profile unless you choose GitHub import, opt in to AI suggestions, or export them.',
   },
   {
     question: 'Do I need an account or internet?',
-    answer: 'There is no account. After the app loads, your register and rule-based tools run in the browser; GitHub import and provider-backed features need an internet connection.',
+    answer: 'There is no account. Your register and rule-based tools run in the browser after the app loads. GitHub import and opt-in AI suggestions need an internet connection.',
   },
   {
     question: 'What does the GitHub import do, and does it see private repos?',
-    answer: 'When you choose import, the app’s route reads public repository details, language data, root manifests, and a short README excerpt to prepare a project record. Private repositories are not supported.',
+    answer: 'When you choose Analyze, your public repository URL goes to this app’s /api/analyze-repo route. That route reads public GitHub repository details, languages, topics, selected root manifests, and a short README excerpt. Private repositories are not supported. If an AI provider is configured, repository details and the README excerpt may also go to that provider for suggestions; the raw manifests are used by the route to detect the stack.',
   },
   {
     question: 'What is sent when I use the AI suggestions, and can I turn it off?',
-    answer: 'AI autopsy sends project details to the app route; a configured provider receives the name, category, stack, description, and any supplied excerpt. GitHub import may send the repository name, description, topics, languages, detected stack, and README excerpt (not raw manifests); AI Oracle sends your question and up to ten project summaries. Skip AI autopsy, use manual entry, and keep Oracle in local mode to avoid provider requests; output is labeled “suggested, please review,” and local fallbacks remain available.',
+    answer: 'AI Autopsy is optional: when you choose Auto-Suggest with AI, project name, category, stack, description, and repository text are sent through this app’s /api/suggest-autopsy route to the configured AI provider. GitHub Analyze may also use a configured provider to suggest project fields. Oracle starts in local rule-based mode; if you switch on AI Advisor, your question and up to ten project summaries go through this app’s /api/oracle-chat route to the configured provider. AI results are labeled “Suggested by AI, please review.” Use manual entry and keep Oracle in local mode to avoid AI provider requests; local fallbacks remain available.',
   },
   {
     question: 'What is the Resurrection Score and how reliable is it?',
-    answer: 'It is a rule-based heuristic from your completion, reusable parts, willingness, available time, scope clarity, and blockers. It is a guide, not a prediction or a validated measure.',
+    answer: 'It is a rule-based heuristic calculated from your autopsy answers, including completion, reusable parts, willingness, available time, scope clarity, and blockers. It is a guide, not a prediction or a validated measure.',
   },
   {
     question: 'What do Phoenix, Pivot, Salvage and Archive mean?',
@@ -28,7 +28,7 @@ const questions = [
   },
   {
     question: 'Can I export or delete everything?',
-    answer: 'You can export the register as JSON or Markdown, delete projects and their linked parts, or remove salvaged components. There is no one-click clear-all control; restoring a valid JSON backup replaces the active register.',
+    answer: 'You can download a JSON backup or Markdown project summary, delete individual projects and their linked parts, or remove salvaged components. There is no one-click clear-all control; restoring a valid JSON backup replaces the active register.',
   },
   {
     question: 'Is it only for code projects?',
