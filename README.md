@@ -1,6 +1,6 @@
 # Proj-revi-camp (The Project Graveyard) 🪦
 
-> *Your abandoned code isn't dead. It's waiting.*
+> *Bury it properly. Find out why it stopped, score its chances, then decide: revive it, rebuild it, strip it for parts, or let it rest.*
 
 A client-side cyberpunk crypt and diagnostic sanctuary for developers to file away stalled side projects, conduct objective post-mortem autopsies, compute a heuristic **Resurrection Score**, and either trigger a focused 72-hour revival sprint or harvest battle-tested components into a personal Salvage Market.
 

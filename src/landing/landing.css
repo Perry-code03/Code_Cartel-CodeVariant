@@ -1,0 +1,270 @@
+﻿.landing-root {
+  --bg: #0A0D12;
+  --surface: #11161D;
+  --surface-2: #171E27;
+  --border: #232C38;
+  --text: #E6EAF0;
+  --muted: #8A96A7;
+  --violet: #8B5CF6;
+  --violet-soft: #A78BFA;
+  --acid: #B6FF3C;
+  --amber: #FFB224;
+  --danger: #FF5C7A;
+  --landing-rule: color-mix(in srgb, var(--border) 88%, var(--violet));
+  min-height: 100%;
+  overflow: clip;
+  color: var(--text);
+  background: var(--bg);
+  font-family: "Inter Variable", Inter, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.landing-root * { box-sizing: border-box; }
+.landing-root .landing-button {
+  display: inline-flex;
+  min-height: 32px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: .5rem;
+  color: var(--bg);
+  background: var(--acid);
+  font: 500 .875rem/1.25 "JetBrains Mono Variable", monospace;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+.landing-root .landing-button:hover { background: color-mix(in srgb, var(--acid) 80%, transparent); }
+.landing-root .landing-button-outline { border-color: var(--border); color: var(--text); background: var(--surface); }
+.landing-root .landing-button-outline:hover { border-color: var(--violet-soft); background: var(--surface-2); }
+.landing-root .landing-button-link { padding-inline: 10px; color: var(--text); background: transparent; text-decoration: underline; text-decoration-color: var(--violet); text-underline-offset: 4px; }
+.landing-root .landing-button-link:hover { color: var(--violet-soft); background: transparent; }
+.landing-root .landing-button-sm { min-height: 28px; gap: 4px; padding-inline: 10px; font-size: .8rem; }
+.landing-root .landing-button-lg { min-height: 36px; padding-inline: 10px; }
+.landing-root .landing-card { display: flex; min-width: 0; flex-direction: column; gap: 16px; overflow: hidden; border-radius: .75rem; padding-block: 16px; font-size: .875rem; }
+.landing-root h1,
+.landing-root h2,
+.landing-root h3,
+.landing-root p,
+.landing-root figure { margin-top: 0; }
+.landing-root h1,
+.landing-root h2,
+.landing-root h3 { font-family: "JetBrains Mono Variable", monospace; font-weight: 700; letter-spacing: -.045em; }
+.landing-root h1,
+.landing-root h2 { line-height: 1.12; }
+.landing-root h1 { max-width: 14ch; margin-bottom: 22px; font-size: clamp(2.25rem, 5.4vw, 4.8rem); }
+.landing-root h2 { max-width: 20ch; margin-bottom: 18px; font-size: clamp(1.85rem, 3.8vw, 3.2rem); }
+.landing-root h3 { font-size: clamp(1.15rem, 2vw, 1.55rem); }
+.landing-root button,
+.landing-root input { font: inherit; }
+.landing-root :focus-visible { outline: 2px solid var(--violet-soft); outline-offset: 3px; }
+.landing-root .page-width { position: relative; z-index: 2; width: min(1180px, calc(100% - 64px)); margin-inline: auto; }
+.landing-root .landing-section { position: relative; overflow: hidden; background: var(--bg); }
+.landing-root .section-kicker { margin-bottom: 12px; color: var(--violet-soft); font: 600 .76rem/1.4 "JetBrains Mono Variable", monospace; }
+.landing-root .hero-section { min-height: 760px; padding: 68px 0 76px; isolation: isolate; }
+.landing-root .hero-scene { position: absolute; z-index: 0; inset: 0; overflow: hidden; pointer-events: none; }
+.landing-root .scene-layer { position: absolute; inset-inline: 0; bottom: 0; height: 100%; will-change: transform; }
+.landing-root .scene-sky { top: 0; color: var(--violet-soft); opacity: .34; }
+.landing-root .scene-hills { color: var(--violet); opacity: .18; }
+.landing-root .scene-gate { color: var(--violet-soft); opacity: .42; }
+.landing-root .scene-graves { color: var(--muted); opacity: .38; }
+.landing-root .scene-grass { color: var(--acid); opacity: .5; }
+.landing-root .scene-layer svg { display: block; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.landing-root .scene-sky svg { stroke-width: 1.5; }
+.landing-root .scene-hills svg { fill: currentColor; stroke: none; }
+.landing-root .scene-graves svg { fill: color-mix(in srgb, var(--surface-2) 78%, var(--muted)); stroke: currentColor; }
+.landing-root .scene-graves .candle-flame { fill: var(--acid); stroke: var(--acid); }
+.landing-root .scene-grass svg { fill: currentColor; stroke-width: 1.6; }
+.landing-root .moon { fill: var(--violet-soft); stroke: var(--violet-soft); }
+.landing-root .fog-band { position: absolute; left: -16%; width: 132%; height: clamp(35px, 7vw, 88px); border-radius: 50%; background: color-mix(in srgb, var(--surface-2) 72%, transparent); filter: blur(8px); opacity: .22; }
+.landing-root .fog-band-one { top: 35%; }
+.landing-root .fog-band-two { top: 57%; opacity: .16; }
+.landing-root .hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(320px, .8fr); gap: clamp(30px, 7vw, 92px); align-items: center; }
+.landing-root .hero-copy { position: relative; z-index: 3; max-width: 650px; padding-block: 28px; }
+.landing-root .registry-mark { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--muted); font: 600 .78rem "JetBrains Mono Variable", monospace; }
+.landing-root .registry-mark svg { width: 22px; height: 22px; color: var(--acid); }
+.landing-root .hero-deck { max-width: 56ch; margin-bottom: 26px; color: var(--text); font-size: clamp(1rem, 1.4vw, 1.15rem); line-height: 1.65; }
+.landing-root .hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.landing-root .hero-note { margin: 20px 0 0; color: var(--muted); font: .75rem "JetBrains Mono Variable", monospace; }
+.landing-root .hero-stone { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.landing-root .stone-wrap { width: min(100%, 390px); }
+.landing-root .stone-frame { position: relative; width: 100%; }
+.landing-root .stone-art { display: block; width: 100%; height: auto; overflow: visible; }
+.landing-root .stone-inscription { position: absolute; top: 25%; left: 50%; display: flex; width: 68%; transform: translateX(-50%); flex-direction: column; align-items: center; color: var(--bg); text-align: center; text-shadow: 1px 1px 0 color-mix(in srgb, var(--violet-soft) 70%, var(--text)), -1px -1px 0 color-mix(in srgb, var(--bg) 72%, transparent); }
+.landing-root .carved { display: block; overflow: hidden; max-width: 100%; clip-path: inset(0 0 0 0); animation: pg-carve-in 900ms cubic-bezier(.2,.8,.2,1) both; font-family: "JetBrains Mono Variable", monospace; font-weight: 700; }
+.landing-root .carved-update { animation-duration: 250ms; animation-delay: 0ms; }
+.landing-root .carved-small { margin-bottom: 8px; font-size: clamp(.8rem, 1.2vw, .95rem); }
+.landing-root .carved-name { width: 100%; white-space: nowrap; line-height: 1; }
+.landing-root .carved-years { margin-top: 12px; font-size: clamp(.78rem, 1.1vw, .9rem); }
+.landing-root .carved-epitaph { max-width: 100%; margin-top: 13px; font-family: "Instrument Serif", Georgia, serif; font-size: clamp(.94rem, 1.4vw, 1.12rem); font-style: italic; line-height: 1.22; }
+@keyframes pg-carve-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.landing-root .stone-controls { display: grid; grid-template-columns: 1fr auto; gap: 8px 10px; align-items: center; margin-top: 8px; }
+.landing-root .stone-controls label { grid-column: 1 / -1; color: var(--text); font: 600 .76rem "JetBrains Mono Variable", monospace; }
+.landing-root .stone-controls input { min-width: 0; height: 36px; padding: 6px 9px; border: 1px solid var(--border); border-radius: .5rem; color: var(--text); background: var(--surface-2); }
+.landing-root .stone-specks { position: absolute; right: 12%; bottom: 40px; z-index: 4; display: flex; gap: 13px; pointer-events: none; }
+.landing-root .stone-specks i { width: 3px; height: 3px; border-radius: 50%; background: var(--violet-soft); opacity: 0; animation: pg-speck-fall 1.3s ease-in both; }
+.landing-root .stone-specks i:nth-child(2n) { animation-delay: 140ms; }
+.landing-root .stone-specks i:nth-child(3n) { animation-delay: 280ms; }
+@keyframes pg-speck-fall { 0% { transform: translateY(-42px); opacity: 0; } 18% { opacity: .7; } 100% { transform: translateY(42px); opacity: 0; } }
+.landing-root .case-section { padding: 106px 0 110px; }
+.landing-root .case-layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(260px, .72fr); gap: clamp(38px, 7vw, 96px); align-items: center; }
+.landing-root .case-paper { position: relative; min-height: 440px; margin: 26px 0 0; padding: 28px clamp(20px, 4vw, 40px) 26px; border: 1px solid var(--border); border-radius: .75rem; color: var(--text); background: var(--surface); box-shadow: 0 18px 50px color-mix(in srgb, var(--bg) 90%, transparent); }
+.landing-root .case-title { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 15px; border-bottom: 1px solid var(--border); color: var(--violet-soft); font: 600 .72rem "JetBrains Mono Variable", monospace; }
+.landing-root .case-title span:last-child { color: var(--muted); text-align: right; }
+.landing-root .case-hourglass { display: inline-block; width: 13px; height: 18px; margin-left: 5px; vertical-align: middle; fill: none; stroke: var(--violet-soft); stroke-width: 1.7; }
+.landing-root .case-paper figure { margin: 0; }
+.landing-root .case-fields { margin: 9px 0 0; }
+.landing-root .case-fields div { display: grid; grid-template-columns: minmax(110px, .6fr) 1.4fr; gap: 14px; min-height: 54px; align-items: center; border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
+.landing-root .case-fields dt { color: var(--muted); font: 500 .7rem "JetBrains Mono Variable", monospace; }
+.landing-root .case-fields dd { margin: 0; color: var(--text); font-family: "Instrument Serif", Georgia, serif; font-size: clamp(1rem, 1.4vw, 1.15rem); font-style: italic; line-height: 1.28; }
+.landing-root .score-stamp { position: absolute; right: 18px; bottom: 22px; display: flex; min-width: 142px; flex-direction: column; align-items: center; padding: 7px 10px; transform: rotate(-9deg) scale(1); border: 3px double var(--danger); color: var(--danger); opacity: .96; text-align: center; }
+.landing-root .score-stamp span { font: 600 .55rem "JetBrains Mono Variable", monospace; }
+.landing-root .score-stamp strong { font: 700 1.2rem "JetBrains Mono Variable", monospace; line-height: 1.05; }
+.landing-root .score-stamp small { font: 500 .6rem "JetBrains Mono Variable", monospace; }
+.landing-root .case-paper figcaption { max-width: 220px; margin-top: 14px; color: var(--muted); font-size: .7rem; }
+.landing-root .autopsy-list-wrap { align-self: end; padding-bottom: 14px; }
+.landing-root .autopsy-list-wrap h3 { margin-bottom: 13px; }
+.landing-root .autopsy-list { margin: 0; padding: 0; list-style: none; counter-reset: item; }
+.landing-root .autopsy-list li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); color: var(--text); font-size: .86rem; }
+.landing-root .autopsy-list li span { color: var(--acid); font: 600 .72rem "JetBrains Mono Variable", monospace; }
+.landing-root .ribbon-section { overflow: hidden; padding: 20px 0; border-block: 1px solid var(--border); background: var(--surface); }
+.landing-root .epitaph-ribbon { display: flex; width: max-content; gap: 32px; white-space: nowrap; color: var(--muted); font: italic 1rem "Instrument Serif", Georgia, serif; }
+.landing-root .epitaph-ribbon span::after { padding-left: 32px; color: var(--violet); content: "✦"; }
+.landing-root .verdict-section { min-height: 760px; padding: 100px 0 96px; isolation: isolate; }
+.landing-root .verdict-section::before { position: absolute; inset: 0; z-index: -2; background: linear-gradient(180deg, var(--bg), var(--surface)); content: ""; }
+.landing-root .verdict-intro { max-width: 700px; }
+.landing-root .verdict-intro > p:last-child { max-width: 48ch; color: var(--muted); }
+.landing-root .verdict-stage { position: relative; min-height: 420px; margin-top: 40px; padding: 0 0 16px; border-bottom: 2px solid var(--border); }
+.landing-root .plot-ground { display: grid; grid-template-columns: 90px repeat(4, minmax(0, 1fr)); gap: clamp(12px, 1.8vw, 22px); align-items: end; min-height: 470px; }
+.landing-root .lantern { position: relative; z-index: 2; width: 100px; margin: 0 auto 20px; color: var(--amber); }
+.landing-root .lantern svg { display: block; width: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.landing-root .lantern .lantern-glass { fill: color-mix(in srgb, var(--amber) 20%, var(--surface)); stroke: var(--amber); }
+.landing-root .lantern .lantern-cap,
+.landing-root .lantern .lantern-base { fill: var(--surface-2); stroke: currentColor; }
+.landing-root .lantern .lantern-loop,
+.landing-root .lantern .lantern-handle { stroke: currentColor; }
+.landing-root .lantern .flame { fill: var(--amber); stroke: var(--amber); }
+.landing-root .lantern-beam { position: absolute; z-index: -1; inset: -60px -120px -30px; border-radius: 50%; background: radial-gradient(ellipse, color-mix(in srgb, var(--amber) 12%, transparent), transparent 68%); opacity: 0; pointer-events: none; }
+.landing-root .plot-marker { display: flex; min-width: 0; min-height: 430px; flex-direction: column; justify-content: end; align-items: flex-start; padding: 0 5px; border: 0; color: var(--text); background: transparent; text-align: left; cursor: pointer; }
+.landing-root .marker-art { display: block; width: min(100%, 220px); height: auto; margin: 0 auto 10px; overflow: visible; }
+.landing-root .marker-art-pivot { width: min(82%, 190px); }
+.landing-root .marker-front { fill: var(--surface-2); }
+.landing-root .marker-art .stone-front { fill: var(--surface-2); transition: fill 160ms ease; }
+.landing-root .marker-art .stone-bevel { fill: color-mix(in srgb, var(--muted) 62%, var(--surface-2)); }
+.landing-root .marker-art .stone-side,
+.landing-root .marker-art .stone-base-side { fill: var(--bg); }
+.landing-root .marker-art .stone-base { fill: var(--surface-2); }
+.landing-root .marker-art .stone-incision { fill: none; stroke: color-mix(in srgb, var(--border) 70%, var(--bg)); stroke-width: 2; stroke-linecap: round; }
+.landing-root .marker-art .stone-shadow { fill: color-mix(in srgb, var(--bg) 75%, transparent); }
+.landing-root .marker-art .stone-grass,
+.landing-root .marker-art .ivy { fill: none; stroke: var(--violet-soft); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.landing-root .marker-art .ivy { stroke: var(--acid); stroke-width: 2; }
+.landing-root .marker-name { margin-bottom: 6px; font: 700 1.2rem "JetBrains Mono Variable", monospace; }
+.landing-root .marker-line { max-width: 185px; color: var(--text); font-size: .81rem; line-height: 1.45; }
+.landing-root .marker-detail { display: block; max-width: 195px; min-height: 3.8em; margin-top: 7px; color: var(--muted); font-size: .76rem; line-height: 1.45; opacity: 0; visibility: hidden; transition: opacity 160ms ease, visibility 160ms ease; }
+.landing-root .plot-marker:hover .marker-art .stone-front,
+.landing-root .plot-marker:focus-visible .marker-art .stone-front,
+.landing-root .plot-marker.is-active .marker-art .stone-front { fill: color-mix(in srgb, var(--surface-2) 75%, var(--violet)); }
+.landing-root .plot-marker:hover .marker-detail,
+.landing-root .plot-marker:focus-visible .marker-detail,
+.landing-root .plot-marker.is-active .marker-detail { opacity: 1; visibility: visible; }
+.landing-root .privacy-section { padding: 88px 0 94px; border-top: 1px solid var(--border); }
+.landing-root .privacy-columns { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(38px, 9vw, 130px); }
+.landing-root .privacy-columns > div { max-width: 520px; }
+.landing-root .privacy-columns h3 { margin-bottom: 12px; color: var(--violet-soft); }
+.landing-root .privacy-columns p { color: var(--muted); font-size: .88rem; }
+.landing-root .closing-section { padding-top: 68px; isolation: isolate; }
+.landing-root .closing-content { display: grid; grid-template-columns: minmax(0, 1fr) 170px; min-height: 270px; align-items: center; gap: 48px; }
+.landing-root .closing-copy h2 { max-width: 17ch; margin-bottom: 24px; }
+.landing-root .closing-lantern { display: block; width: 150px; height: auto; justify-self: center; overflow: visible; }
+.landing-root .site-footer { position: relative; z-index: 3; display: flex; min-height: 75px; align-items: center; justify-content: space-between; gap: 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: .72rem; }
+.landing-root .site-footer nav { display: flex; flex-wrap: wrap; gap: 18px; }
+.landing-root .site-footer a { color: var(--text); text-decoration: underline; text-decoration-color: var(--violet); text-underline-offset: 3px; }
+.landing-root .site-footer a:hover { color: var(--acid); }
+.landing-root .scroll-marker { position: fixed; z-index: 30; top: 12vh; right: 14px; width: 14px; height: 70vh; pointer-events: none; }
+.landing-root .scroll-track { position: absolute; inset: 0 auto 0 6px; width: 2px; background: var(--border); }
+.landing-root .scroll-fill { position: absolute; inset: 0 auto 0 6px; width: 2px; background: var(--acid); transform-origin: top center; }
+.landing-root .scroll-lantern { position: absolute; top: 0; left: 0; width: 14px; color: var(--amber); }
+.landing-root .scroll-lantern svg { width: 100%; fill: var(--surface); stroke: currentColor; stroke-width: 2; }
+.landing-root .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.landing-root .faq-section { padding: 88px 0 94px; border-top: 1px solid var(--border); }
+.landing-root .faq-section h2 { max-width: 24ch; }
+.landing-root .landing-faq { max-width: 70ch; margin-top: 30px; border-top: 1px solid var(--border); }
+.landing-root .landing-faq-item { border-bottom: 1px solid var(--border); }
+.landing-root .landing-faq-item h3 { margin: 0; font: inherit; }
+.landing-root .landing-faq-trigger { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 20px; padding: 17px 0; border: 0; color: var(--text); background: transparent; text-align: left; cursor: pointer; }
+.landing-root .landing-faq-trigger > span:first-child { max-width: 62ch; font-size: 1rem; font-weight: 600; }
+.landing-root .landing-faq-indicator { color: var(--violet-soft); font-size: 1.35rem; line-height: 1; }
+.landing-root .landing-faq-panel { overflow: hidden; }
+.landing-root .landing-faq-panel p { max-width: 70ch; margin: 0; padding: 0 36px 18px 0; color: var(--muted); font-size: .9rem; line-height: 1.6; }
+
+@media (max-width: 900px) {
+  .landing-root .hero-section { min-height: auto; padding-top: 48px; }
+  .landing-root .hero-grid { grid-template-columns: 1fr; gap: 24px; }
+  .landing-root .hero-copy { max-width: 720px; }
+  .landing-root .hero-stone { width: min(100%, 400px); justify-self: center; }
+  .landing-root .scene-layer { height: 88%; }
+  .landing-root .case-layout { grid-template-columns: 1fr; gap: 34px; }
+  .landing-root .autopsy-list-wrap { width: min(100%, 680px); }
+  .landing-root .verdict-section { min-height: auto; padding-block: 80px; }
+  .landing-root .plot-ground { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px 22px; min-height: 0; padding-top: 48px; }
+  .landing-root .lantern { position: absolute; top: -45px; left: 4px; width: 72px; margin: 0; }
+  .landing-root .plot-marker { min-height: 390px; }
+  .landing-root .marker-art { width: min(100%, 190px); }
+  .landing-root .marker-art-pivot { width: min(82%, 165px); }
+  .landing-root .marker-detail { min-height: 4.5em; }
+}
+@media (max-width: 600px) {
+  .landing-root .page-width { width: calc(100% - 36px); }
+  .landing-root .hero-section { padding: 32px 0 52px; }
+  .landing-root .hero-grid { gap: 18px; }
+  .landing-root h1 { max-width: 16ch; font-size: clamp(1.85rem, 8.5vw, 3rem); }
+  .landing-root .hero-deck { font-size: .94rem; }
+  .landing-root .hero-actions { gap: 11px; }
+  .landing-root .stone-wrap { width: min(100%, 330px); }
+  .landing-root .stone-controls { grid-template-columns: 1fr; }
+  .landing-root .stone-controls label { grid-column: auto; }
+  .landing-root .case-section { padding: 66px 0 72px; }
+  .landing-root .case-paper { min-height: 478px; padding: 21px 15px 20px; }
+  .landing-root .case-title { font-size: .62rem; }
+  .landing-root .case-fields div { grid-template-columns: 77px 1fr; gap: 8px; min-height: 62px; }
+  .landing-root .case-fields dt { font-size: .62rem; }
+  .landing-root .case-fields dd { font-size: .93rem; }
+  .landing-root .score-stamp { right: 10px; bottom: 28px; min-width: 120px; padding: 5px 7px; }
+  .landing-root .case-paper figcaption { max-width: 138px; font-size: .62rem; }
+  .landing-root .plot-ground { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 22px 12px; min-height: 0; margin-top: 30px; }
+  .landing-root .lantern { position: absolute; top: -56px; right: 0; width: 52px; }
+  .landing-root .plot-marker { min-height: 290px; }
+  .landing-root .marker-art { width: min(100%, 165px); }
+  .landing-root .marker-art-pivot { width: min(82%, 140px); }
+  .landing-root .marker-name { font-size: 1rem; }
+  .landing-root .marker-line,
+  .landing-root .marker-detail { font-size: .72rem; }
+  .landing-root .marker-detail { min-height: 5.4em; }
+  .landing-root .plot-marker { min-height: 330px; }
+  .landing-root .faq-section { padding: 64px 0 70px; }
+  .landing-root .closing-section { padding-top: 42px; }
+  .landing-root .closing-content { grid-template-columns: minmax(0, 1fr) 110px; min-height: 230px; gap: 18px; }
+  .landing-root .closing-lantern { width: 100px; }
+  .landing-root .site-footer { align-items: flex-start; flex-direction: column; justify-content: center; padding: 16px 0; gap: 9px; }
+  .landing-root .site-footer nav { gap: 14px; }
+  .landing-root .scroll-marker { display: none; }
+  .landing-root .scene-sky { opacity: .16; }
+  .landing-root .scene-layer { height: 72%; }
+  .landing-root .scene-hills { display: none; }
+  .landing-root .fog-band { opacity: .1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-root *,
+  .landing-root *::before,
+  .landing-root *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .landing-root .carved,
+  .landing-root .stone-specks i { animation: none !important; }
+  .landing-root .carved { clip-path: none !important; }
+  .landing-root .stone-specks { display: none; }
+}
