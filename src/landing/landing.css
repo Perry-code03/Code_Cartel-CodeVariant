@@ -223,7 +223,7 @@
   .landing-root .page-width { width: calc(100% - 36px); }
   .landing-root .hero-section { padding: 32px 0 52px; }
   .landing-root .hero-grid { gap: 18px; }
-  .landing-root h1 { max-width: 16ch; font-size: clamp(2rem, 10vw, 3rem); }
+  .landing-root h1 { max-width: 16ch; font-size: clamp(1.85rem, 8.5vw, 3rem); }
   .landing-root .hero-deck { font-size: .94rem; }
   .landing-root .hero-actions { gap: 11px; }
   .landing-root .stone-wrap { width: min(100%, 330px); }
