@@ -42,3 +42,10 @@ Use only the FREE core transitions. Do NOT fetch, scrape or copy Pro-only recipe
 
 ## Verify, don't assume
 After changes run `npm run build`, `npm run lint` and `npm test`. Report real output. Say clearly what you could not verify.
+
+## When you finish a task
+- Run this command once, as the very last step, to play a sound:
+  powershell -c "[System.Media.SystemSounds]::Exclamation.Play()"
+- Keep your final summary under 20 lines. Say what changed, which files changed, and how to see it.
+- Only go over 20 lines when it is truly necessary, such as a bug that needs a detailed explanation or a decision I must make.
+- Don't repeat the code in the summary.
