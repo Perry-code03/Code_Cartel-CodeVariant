@@ -140,9 +140,9 @@ describe('suggestAutopsy in src/lib/api.ts', () => {
 
   it('returns AutopsySuggestion on successful 200 response', async () => {
     const mockSuggestion = {
-      whatBroke: 'Race condition occurred during token refresh.',
-      whyStopped: 'Solo developer burnout while debugging distributed lock.',
-      stopCategory: 'burnout' as const,
+      whatWasBuilt: 'Node.js background queue worker.',
+      whatBroke: 'RabbitMQ connection pool starvation.',
+      activityFacts: ['Last commit: 14 months ago'],
       source: 'ai' as const,
       aiProviderName: 'Groq',
     };
@@ -153,23 +153,27 @@ describe('suggestAutopsy in src/lib/api.ts', () => {
       json: async () => mockSuggestion,
     } as Response);
 
-    const result = await suggestAutopsy({ name: 'legacy-auth' });
+    const result = await suggestAutopsy({ name: 'email-worker' });
     expect(result.whatBroke).toBe(mockSuggestion.whatBroke);
+    expect(result.whatWasBuilt).toBe(mockSuggestion.whatWasBuilt);
     expect(result.source).toBe('ai');
     expect(result.aiProviderName).toBe('Groq');
+    expect(result.activityFacts).toEqual(mockSuggestion.activityFacts);
   });
 
-  it('returns deterministic fallback on network failure', async () => {
+  it('returns deterministic facts fallback on network failure', async () => {
     globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network offline'));
 
     const result = await suggestAutopsy({
       name: 'legacy-auth',
       stack: ['Node.js', 'PostgreSQL'],
       category: 'API / Backend',
+      lastActiveAt: '2025-08-10T10:00:00Z',
     });
 
-    expect(result.source).toBe('heuristic');
-    expect(result.whatBroke).toContain('legacy-auth');
-    expect(result.stopCategory).toBe('technical');
+    expect(result.source).toBe('facts-only');
+    expect(result.activityFacts.length).toBeGreaterThan(0);
+    expect(result.whatWasBuilt).toBeNull();
+    expect(result.whatBroke).toBeNull();
   });
 });

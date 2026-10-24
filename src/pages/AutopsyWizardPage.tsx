@@ -21,6 +21,7 @@ import {
   Sparkles,
   X,
   Check,
+  Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -75,6 +76,9 @@ export const AutopsyWizardPage: React.FC = () => {
         stack: project.stack,
         category: project.category,
         completion: project.completion,
+        lastActiveAt: project.lastActiveAt,
+        createdAt: project.createdAt,
+        repoUrl: (project as { repoUrl?: string }).repoUrl,
         whatWasBuilt: whatWasBuilt.trim() || undefined,
       });
       setSuggestion(res);
@@ -87,23 +91,21 @@ export const AutopsyWizardPage: React.FC = () => {
 
   const handleApplySuggestions = () => {
     if (!suggestion) return;
-    setWhatBroke(suggestion.whatBroke);
-    setWhyStopped(suggestion.whyStopped);
-    setStopCategory(suggestion.stopCategory);
-    if ((!whatWasBuilt || whatWasBuilt.trim().length < 10) && suggestion.whatWasBuilt) {
+    if (suggestion.whatWasBuilt && suggestion.whatWasBuilt.trim()) {
       setWhatWasBuilt(suggestion.whatWasBuilt);
     }
-    if (suggestion.blockerSeverity) {
-      setBlockerSeverity(String(suggestion.blockerSeverity));
+    if (
+      suggestion.whatBroke &&
+      suggestion.whatBroke.trim() &&
+      !suggestion.whatBroke.toLowerCase().includes('not enough information')
+    ) {
+      setWhatBroke(suggestion.whatBroke);
     }
-    if (suggestion.scopeClarity) {
-      setScopeClarity(String(suggestion.scopeClarity));
-    }
-    if (suggestion.suggestedUsefulComponents !== undefined) {
-      setUsefulComponents(String(suggestion.suggestedUsefulComponents));
-    }
+    // Scoring fields and personal reasons are NEVER pre-filled by AI
     setSuggestion(null);
-    setAppliedNotice('AI suggestions applied to form. You can review and edit each field below.');
+    setAppliedNotice(
+      'Evidence-based suggestions applied to form. Scoring and personal reflection fields remain for your direct input.'
+    );
   };
 
   // Load existing autopsy if present
@@ -298,20 +300,20 @@ export const AutopsyWizardPage: React.FC = () => {
           )}
 
           {suggestion ? (
-            <div className="p-5 rounded-2xl bg-surface border border-violet/40 shadow-lg space-y-3 font-mono text-xs">
+            <div className="p-5 rounded-2xl bg-surface border border-violet/40 shadow-lg space-y-4 font-mono text-xs">
               <div className="flex items-center justify-between border-b border-border/50 pb-2.5">
                 <div className="flex items-center gap-1.5 text-violet-soft">
                   <Sparkles size={15} />
                   <span className="font-bold">
                     {suggestion.source === 'ai'
                       ? `Suggested by AI (${suggestion.aiProviderName || 'AI'}), please review`
-                      : 'Suggested by rule-based heuristic'}
+                      : 'Repository Activity Facts'}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSuggestion(null)}
-                  className="text-muted hover:text-text p-1 rounded hover:bg-surface-2"
+                  className="text-muted hover:text-text p-1 rounded hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-violet"
                   aria-label="Dismiss suggestion"
                 >
                   <X size={15} />
@@ -324,45 +326,45 @@ export const AutopsyWizardPage: React.FC = () => {
                 </div>
               )}
 
-              <div className="space-y-3 text-xs leading-relaxed">
-                {suggestion.whatWasBuilt && (!whatWasBuilt || whatWasBuilt.trim().length < 10) && (
+              {/* Activity facts box: Built by plain code (no AI) from real repository dates and markers */}
+              {suggestion.activityFacts && suggestion.activityFacts.length > 0 && (
+                <div className="p-3 rounded-xl bg-surface-2 border border-border space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-muted font-bold">
+                    <Clock size={13} className="text-acid" />
+                    <span>Activity facts (from repository data):</span>
+                  </div>
+                  <ul className="list-disc list-inside space-y-0.5 text-text pl-1 text-[11px]">
+                    {suggestion.activityFacts.map((fact, idx) => (
+                      <li key={idx}>{fact}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Evidence-based Suggestions */}
+              <div className="space-y-2.5 text-xs leading-relaxed">
+                {suggestion.whatWasBuilt && (
                   <div className="p-2.5 rounded-lg bg-surface-2/60 border border-border">
-                    <span className="text-muted font-bold block mb-0.5">Suggested Built Scope:</span>
+                    <span className="text-muted font-bold block mb-0.5">Built Scope (from description / README):</span>
                     <span className="text-text">{suggestion.whatWasBuilt}</span>
                   </div>
                 )}
-                <div className="p-2.5 rounded-lg bg-surface-2/60 border border-border">
-                  <span className="text-muted font-bold block mb-0.5">Suggested What Broke (Failure Point):</span>
-                  <span className="text-text">{suggestion.whatBroke}</span>
-                </div>
-                <div className="p-2.5 rounded-lg bg-surface-2/60 border border-border">
-                  <span className="text-muted font-bold block mb-0.5">Suggested Why Momentum Died:</span>
-                  <span className="text-text">{suggestion.whyStopped}</span>
-                </div>
-                <div className="flex flex-wrap gap-2 text-[11px]">
-                  <span className="px-2.5 py-1 rounded bg-surface-2 border border-border text-text">
-                    Stop Category: <strong className="text-acid uppercase">{suggestion.stopCategory}</strong>
-                  </span>
-                  {suggestion.blockerSeverity && (
-                    <span className="px-2.5 py-1 rounded bg-surface-2 border border-border text-text">
-                      Blocker: <strong>{suggestion.blockerSeverity} / 5</strong>
-                    </span>
-                  )}
-                  {suggestion.scopeClarity && (
-                    <span className="px-2.5 py-1 rounded bg-surface-2 border border-border text-text">
-                      Scope clarity: <strong>{suggestion.scopeClarity} / 5</strong>
-                    </span>
-                  )}
-                  {suggestion.suggestedUsefulComponents !== undefined && (
-                    <span className="px-2.5 py-1 rounded bg-surface-2 border border-border text-text">
-                      Useful parts: <strong>{suggestion.suggestedUsefulComponents}</strong>
-                    </span>
-                  )}
-                </div>
+
+                {suggestion.whatBroke ? (
+                  <div className="p-2.5 rounded-lg bg-surface-2/60 border border-border">
+                    <span className="text-muted font-bold block mb-0.5">What Broke (cited in repository text):</span>
+                    <span className="text-text">{suggestion.whatBroke}</span>
+                  </div>
+                ) : (
+                  <div className="p-2.5 rounded-lg bg-surface-2/40 border border-border/60 text-muted">
+                    <span className="font-bold block mb-0.5">What Broke:</span>
+                    <span className="italic">Not enough information in the repo (left empty for you to fill).</span>
+                  </div>
+                )}
               </div>
 
-              <p className="text-[10px] text-muted pt-1">
-                Opt-in: Project name, stack, and category are sent to your configured AI provider. No data is stored.
+              <p className="text-[10px] text-muted pt-1 border-t border-border/50">
+                Data sent to AI: project name, stack, category, and description/README excerpt. Personal reasons, motivations, and scoring metrics are never guessed by AI.
               </p>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
@@ -397,7 +399,7 @@ export const AutopsyWizardPage: React.FC = () => {
                     </span>
                   </h3>
                   <p className="text-[11px] font-mono text-muted mt-0.5">
-                    Stuck diagnosing? Let AI analyze {project.name}&apos;s stack to suggest what went wrong and why momentum stalled.
+                    Stuck diagnosing? Let AI inspect {project.name}&apos;s description and repository text for evidence-based findings.
                   </p>
                 </div>
               </div>
@@ -408,7 +410,7 @@ export const AutopsyWizardPage: React.FC = () => {
                 className="bg-violet hover:bg-violet/90 text-white font-mono text-xs shrink-0 self-start sm:self-auto"
               >
                 {isAnalyzing ? (
-                  <>Diagnosing Architecture...</>
+                  <>Inspecting Repository...</>
                 ) : (
                   <>
                     <Sparkles size={13} className="mr-1.5" />
@@ -517,18 +519,12 @@ export const AutopsyWizardPage: React.FC = () => {
               <Compass className="text-violet-soft" size={20} />
               <h2 className="font-mono text-lg font-bold text-text">03. Why Development Stopped</h2>
             </div>
-            <button
-              type="button"
-              onClick={handleFetchAiSuggestions}
-              disabled={isAnalyzing}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono bg-violet/15 hover:bg-violet/25 text-violet-soft border border-violet/30 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-violet"
-            >
-              <Sparkles size={12} />
-              {isAnalyzing ? 'Diagnosing...' : 'Suggest with AI'}
-            </button>
+            <span className="text-[11px] font-mono text-muted bg-surface-2 px-2 py-0.5 rounded border border-border">
+              Personal reflection (user-written)
+            </span>
           </div>
           <p className="text-xs text-muted font-sans">
-            Be brutally honest. Was it personal burnout, shifting day-job priorities, scope creep, or lost enthusiasm?
+            Be brutally honest. Was it personal burnout, shifting day-job priorities, scope creep, or lost enthusiasm? (This is your personal insight—never guessed by AI).
           </p>
 
           <Textarea

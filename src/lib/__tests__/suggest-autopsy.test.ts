@@ -56,7 +56,7 @@ describe('POST /api/suggest-autopsy', () => {
     expect(res.status).toBe(400);
   });
 
-  it('falls back to rule-based suggestion when AI_API_KEY is missing', async () => {
+  it('falls back to repository facts only when AI_API_KEY is missing without scoring fields', async () => {
     delete process.env.AI_API_KEY;
     delete process.env.AI_MODEL;
 
@@ -65,7 +65,8 @@ describe('POST /api/suggest-autopsy', () => {
         name: 'legacy-auth',
         stack: ['Node.js', 'PostgreSQL'],
         category: 'API / Backend',
-        completion: 40,
+        lastActiveAt: '2025-08-10T10:00:00Z',
+        createdAt: '2024-03-01T08:00:00Z',
       },
     });
 
@@ -73,25 +74,29 @@ describe('POST /api/suggest-autopsy', () => {
     expect(res.status).toBe(200);
 
     const data = await res.json();
-    expect(data.source).toBe('heuristic');
+    expect(data.source).toBe('facts-only');
     expect(data.notice).toContain('AI key not configured');
-    expect(data.whatBroke).toContain('legacy-auth');
-    expect(data.stopCategory).toBe('technical');
+    expect(data.activityFacts).toBeInstanceOf(Array);
+    expect(data.activityFacts.length).toBeGreaterThan(0);
+    // Scoring fields must NEVER be returned
+    expect(data.stopCategory).toBeUndefined();
+    expect(data.blockerSeverity).toBeUndefined();
+    expect(data.scopeClarity).toBeUndefined();
+    expect(data.whyStopped).toBeUndefined();
   });
 
-  it('returns validated AI suggestions on success with Groq', async () => {
+  it('returns validated AI suggestions on success with Groq without score fields', async () => {
     process.env.AI_API_KEY = 'gsk_test_key_123';
     process.env.AI_MODEL = 'openai/gpt-oss-120b';
     process.env.AI_BASE_URL = 'https://api.groq.com/openai/v1';
 
     const mockAiPayload = {
-      whatBroke: 'Race condition occurred during Redis session token revocation in multi-pod cluster.',
-      whyStopped: 'Solo developer burnout while debugging distributed lock synchronization edge cases.',
-      stopCategory: 'burnout',
       whatWasBuilt: 'Express API with JWT middleware and PostgreSQL user accounts table.',
-      blockerSeverity: 4,
-      scopeClarity: 3,
-      suggestedUsefulComponents: 2,
+      whatBroke: 'Race condition occurred during Redis session token revocation in multi-pod cluster.',
+      // Malicious or speculative fields that must be stripped:
+      stopCategory: 'burnout',
+      whyStopped: 'Personal burnout',
+      blockerSeverity: 5,
     };
 
     globalThis.fetch = vi.fn().mockImplementation((url: string, init?: RequestInit) => {
@@ -119,7 +124,8 @@ describe('POST /api/suggest-autopsy', () => {
         name: 'legacy-auth',
         stack: ['Node.js', 'Redis'],
         category: 'API / Backend',
-        completion: 35,
+        lastActiveAt: '2025-08-10T10:00:00Z',
+        createdAt: '2024-03-01T08:00:00Z',
       },
     });
 
@@ -129,15 +135,22 @@ describe('POST /api/suggest-autopsy', () => {
     const data = await res.json();
     expect(data.source).toBe('ai');
     expect(data.aiProviderName).toBe('Groq');
+    expect(data.whatWasBuilt).toContain('Express API');
     expect(data.whatBroke).toContain('Race condition');
-    expect(data.stopCategory).toBe('burnout');
-    expect(data.blockerSeverity).toBe(4);
+    expect(data.activityFacts).toBeInstanceOf(Array);
+
+    // Ensure scoring fields and personal reasons are never in output
+    expect(data.stopCategory).toBeUndefined();
+    expect(data.whyStopped).toBeUndefined();
+    expect(data.blockerSeverity).toBeUndefined();
+    expect(data.scopeClarity).toBeUndefined();
+    expect(data.suggestedUsefulComponents).toBeUndefined();
 
     // Ensure secret key is never leaked
     expect(JSON.stringify(data)).not.toContain('gsk_test_key_123');
   });
 
-  it('falls back to rule-based suggestion on upstream 429 without leaking error body', async () => {
+  it('falls back to facts-only on upstream 429 without leaking error body', async () => {
     process.env.AI_API_KEY = 'gsk_test_key_123';
     process.env.AI_MODEL = 'openai/gpt-oss-120b';
     process.env.AI_BASE_URL = 'https://api.groq.com/openai/v1';
@@ -151,7 +164,7 @@ describe('POST /api/suggest-autopsy', () => {
     const req = createRequest({
       project: {
         name: 'payment-core',
-        completion: 60,
+        lastActiveAt: '2025-09-01T00:00:00Z',
       },
     });
 
@@ -159,12 +172,12 @@ describe('POST /api/suggest-autopsy', () => {
     expect(res.status).toBe(200);
 
     const data = await res.json();
-    expect(data.source).toBe('heuristic');
-    expect(data.notice).toContain('AI suggestions unavailable right now');
+    expect(data.source).toBe('facts-only');
+    expect(data.notice).toContain('AI suggestions unavailable');
     expect(JSON.stringify(data)).not.toContain('quota depleted');
   });
 
-  it('falls back cleanly on network timeout', async () => {
+  it('falls back to facts-only cleanly on network timeout', async () => {
     process.env.AI_API_KEY = 'gsk_test_key_123';
     process.env.AI_MODEL = 'openai/gpt-oss-120b';
 
@@ -180,7 +193,7 @@ describe('POST /api/suggest-autopsy', () => {
     expect(res.status).toBe(200);
 
     const data = await res.json();
-    expect(data.source).toBe('heuristic');
+    expect(data.source).toBe('facts-only');
     expect(data.notice).toContain('timed out');
   });
 });

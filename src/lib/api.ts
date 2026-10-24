@@ -123,7 +123,7 @@ export async function suggestAutopsy(
     const fallback = generateLocalAutopsyFallback(project);
     return {
       ...fallback,
-      notice: `Received an unparseable response from the server (status: ${response.status}, content-type: ${contentType}). Using local heuristic diagnostics.`,
+      notice: `Received an unparseable response from the server (status: ${response.status}, content-type: ${contentType}). Showing repository activity facts.`,
     };
   }
 
@@ -135,7 +135,7 @@ export async function suggestAutopsy(
       notice:
         errorObj?.notice ||
         errorObj?.error ||
-        'Diagnostic request failed. Showing rule-based suggestions.',
+        'Diagnostic request failed. Showing repository activity facts.',
     };
   }
 

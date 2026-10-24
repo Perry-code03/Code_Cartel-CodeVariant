@@ -136,14 +136,10 @@ export interface OracleAiResponse {
 }
 
 export interface AutopsySuggestion {
-  whatWasBuilt?: string;
-  whatBroke: string;
-  whyStopped: string;
-  stopCategory: StopCategory;
-  suggestedUsefulComponents?: number;
-  scopeClarity?: Rating;
-  blockerSeverity?: Rating;
-  source: 'ai' | 'heuristic';
+  whatWasBuilt?: string | null;
+  whatBroke?: string | null;
+  activityFacts: string[];
+  source: 'ai' | 'facts-only';
   aiProviderName?: string;
   notice?: string;
 }
