@@ -1,0 +1,118 @@
+/* 
+ * Based on transitions.dev (free core set) & original effects
+ * Cyberpunk Crypt transitions with reduced-motion support
+ */
+
+@keyframes t-error-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.t-error-shake {
+  animation: t-error-shake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes t-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.t-shimmer-text {
+  background: linear-gradient(
+    90deg,
+    rgba(230, 234, 240, 0.4) 0%,
+    rgba(182, 255, 60, 0.95) 50%,
+    rgba(230, 234, 240, 0.4) 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: t-shimmer 2.2s linear infinite;
+}
+
+.t-shimmer-violet {
+  background: linear-gradient(
+    90deg,
+    rgba(138, 150, 167, 0.4) 0%,
+    rgba(167, 139, 250, 0.95) 50%,
+    rgba(138, 150, 167, 0.4) 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: t-shimmer 2.2s linear infinite;
+}
+
+/* Success Checkmark Animation */
+@keyframes t-stroke-draw {
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes t-scale-pop {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+
+.t-check-circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: t-stroke-draw 0.5s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.t-check-check {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: t-stroke-draw 0.35s cubic-bezier(0.65, 0, 0.45, 1) 0.35s forwards;
+}
+
+.t-success-pop {
+  animation: t-scale-pop 0.35s ease-in-out 0.6s;
+}
+
+/* Matrix Dot Loader */
+@keyframes t-matrix-pulse {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+    box-shadow: 0 0 6px #B6FF3C;
+  }
+}
+
+.t-matrix-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background-color: #B6FF3C;
+  display: inline-block;
+  animation: t-matrix-pulse 1.4s ease-in-out infinite;
+}
+
+/* Reduced motion preference override */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .t-shimmer-text,
+  .t-shimmer-violet {
+    background: none !important;
+    color: var(--text) !important;
+    animation: none !important;
+  }
+  .t-matrix-dot {
+    animation: none !important;
+    opacity: 0.8 !important;
+    transform: none !important;
+  }
+}

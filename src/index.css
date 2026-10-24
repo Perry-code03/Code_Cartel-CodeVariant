@@ -1,0 +1,132 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/inter";
+@import "@fontsource/instrument-serif";
+@import "./styles/transitions.css";
+
+@layer base {
+  :root {
+    /* Brand tokens */
+    --bg: #0A0D12;
+    --surface: #11161D;
+    --surface-2: #171E27;
+    --border: #232C38;
+    --text: #E6EAF0;
+    --muted: #8A96A7;
+    --violet: #8B5CF6;
+    --violet-soft: #A78BFA;
+    --acid: #B6FF3C;
+    --amber: #FFB224;
+    --danger: #FF5C7A;
+
+    /* Shadcn UI tokens mapped to cyberpunk crypt */
+    --background: #0A0D12;
+    --foreground: #E6EAF0;
+    --card: #11161D;
+    --card-foreground: #E6EAF0;
+    --popover: #11161D;
+    --popover-foreground: #E6EAF0;
+    --primary: #B6FF3C;
+    --primary-foreground: #0A0D12;
+    --secondary: #171E27;
+    --secondary-foreground: #E6EAF0;
+    --muted-bg: #171E27;
+    --muted-foreground: #8A96A7;
+    --accent: #8B5CF6;
+    --accent-foreground: #FFFFFF;
+    --destructive: #FF5C7A;
+    --destructive-foreground: #FFFFFF;
+    --border-color: #232C38;
+    --input: #232C38;
+    --ring: #8B5CF6;
+    --radius: 0.5rem;
+  }
+}
+
+@theme {
+  --color-bg: #0A0D12;
+  --color-surface: #11161D;
+  --color-surface-2: #171E27;
+  --color-border: #232C38;
+  --color-text: #E6EAF0;
+  --color-muted: #8A96A7;
+  --color-violet: #8B5CF6;
+  --color-violet-soft: #A78BFA;
+  --color-acid: #B6FF3C;
+  --color-amber: #FFB224;
+  --color-danger: #FF5C7A;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-display: "JetBrains Mono Variable", monospace;
+  --font-sans: "Inter Variable", sans-serif;
+  --font-epitaph: "Instrument Serif", serif;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: "Inter Variable", sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4 {
+  font-family: "JetBrains Mono Variable", monospace;
+  letter-spacing: -0.02em;
+}
+
+.font-display {
+  font-family: "JetBrains Mono Variable", monospace;
+}
+
+.font-epitaph {
+  font-family: "Instrument Serif", serif;
+  font-style: italic;
+}
+
+/* Subtle dot-grid ambient background */
+.bg-grid-pattern {
+  background-image: radial-gradient(rgba(139, 92, 246, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Tombstone card styling */
+.tombstone-arch {
+  border-top-left-radius: 2.5rem;
+  border-top-right-radius: 2.5rem;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0A0D12;
+}
+::-webkit-scrollbar-thumb {
+  background: #232C38;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8B5CF6;
+}
