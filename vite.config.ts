@@ -1,41 +1,76 @@
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import { defineConfig, loadEnv, type Plugin } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /**
- * Local dev middleware allowing Vite to serve /api/analyze-repo during `npm run dev`
- * using the Web-standard Request/Response handler in api/analyze-repo.ts.
+ * Synchronizes process.env with .env.local without external dependencies or caching issues.
+ */
+function syncEnvFromFile() {
+  const envPath = path.resolve(__dirname, '.env.local');
+  if (fs.existsSync(envPath)) {
+    try {
+      const content = fs.readFileSync(envPath, 'utf-8');
+      for (const rawLine of content.split(/\r?\n/)) {
+        const line = rawLine.trim();
+        if (!line || line.startsWith('#')) continue;
+        const eqIdx = line.indexOf('=');
+        if (eqIdx !== -1) {
+          const key = line.slice(0, eqIdx).trim();
+          let val = line.slice(eqIdx + 1).trim();
+          if (
+            (val.startsWith('"') && val.endsWith('"')) ||
+            (val.startsWith("'") && val.endsWith("'"))
+          ) {
+            val = val.slice(1, -1);
+          }
+          if (key && val) {
+            process.env[key] = val;
+          }
+        }
+      }
+    } catch {
+      // Ignore read errors
+    }
+  }
+}
+
+/**
+ * Local dev middleware allowing Vite to serve /api/* serverless functions during `npm run dev`
+ * using the Web-standard Request/Response handlers in api/*.ts.
  */
 function localApiDevPlugin(): Plugin {
   return {
     name: 'local-api-dev-plugin',
     configureServer(server) {
-      // Load environment variables (including .env.local) into process.env for the local API handler
-      const env = loadEnv('development', process.cwd(), '');
-      for (const [key, val] of Object.entries(env)) {
-        if (process.env[key] === undefined) {
-          process.env[key] = val;
-        }
-      }
+      // Initial env sync
+      syncEnvFromFile();
 
       server.middlewares.use(async (req, res, next) => {
         const rawUrl = req.originalUrl || req.url || '';
-        if (!rawUrl.startsWith('/api/analyze-repo')) {
+        const match = rawUrl.match(/^\/api\/([a-zA-Z0-9_-]+)/);
+        if (!match) {
           return next();
         }
 
+        // Dynamically reload environment variables from .env.local on each API call
+        syncEnvFromFile();
+
+        const routeName = match[1];
+        const endpointFile = `/api/${routeName}.ts`;
+
         try {
-          const apiModule = await server.ssrLoadModule('/api/analyze-repo.ts');
-          const handler = apiModule.POST;
+          const apiModule = await server.ssrLoadModule(endpointFile);
+          const handler = apiModule[req.method || 'POST'] || apiModule.POST;
           if (typeof handler !== 'function') {
-            res.statusCode = 500;
+            res.statusCode = 405;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Handler POST not exported from /api/analyze-repo.ts' }));
+            res.end(JSON.stringify({ error: `Method ${req.method} not allowed on ${endpointFile}` }));
             return;
           }
 

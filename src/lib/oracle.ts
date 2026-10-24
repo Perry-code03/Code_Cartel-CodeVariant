@@ -1,4 +1,4 @@
-import { AppData } from '@/types';
+import { AppData, GraveyardProjectSummary } from '@/types';
 import { generatePhoenixSprintTasks } from './phoenix';
 
 export interface OracleResponse {
@@ -13,7 +13,32 @@ export function queryGraveyardOracle(query: string, data: AppData): OracleRespon
   const projects = data.projects;
   const components = data.components;
 
-  // 1. Help intent
+  // 1. Greeting intent
+  const greetings = ['hi', 'hello', 'hey', 'yo', 'sup', 'howdy', 'greetings'];
+  if (
+    greetings.includes(q) ||
+    greetings.some((g) => q.startsWith(`${g} `) || q.startsWith(`${g}!`) || q.startsWith(`${g},`))
+  ) {
+    return {
+      intent: 'greeting',
+      answer: `Greetings, traveler of the code crypts! I am the Graveyard Oracle, keeper of your abandoned repositories.
+
+Ask me anything about your graveyard:
+• "Which project should I revive first?"
+• "Give me a summary of my graveyard"
+• "Why did legacy-auth stall?"
+• "What components can I salvage?"
+• "Show me a 3-day revival plan for email-worker"
+• "How is the Resurrection Score calculated?"`,
+      suggestedFollowUps: [
+        'Which project should I revive first?',
+        'Give me a summary of my graveyard',
+        'What components can I salvage?',
+      ],
+    };
+  }
+
+  // 2. Help intent
   if (q.includes('help') || q.includes('what can you do') || q === '?') {
     return {
       intent: 'help',
@@ -251,4 +276,20 @@ Try asking:
 • "How is the Resurrection Score calculated?"`,
     suggestedFollowUps: ['Which project should I revive first?', 'Give me a summary of my graveyard'],
   };
+}
+
+
+/**
+ * Extracts a lightweight, safe summary of graveyard projects to send as context to the AI assistant.
+ */
+export function buildGraveyardContext(data: AppData): GraveyardProjectSummary[] {
+  return data.projects.map((p) => ({
+    name: p.name,
+    status: p.status,
+    completion: p.completion,
+    score: p.autopsy?.score,
+    category: p.category,
+    stack: p.stack,
+    stopCategory: p.autopsy?.stopCategory,
+  }));
 }

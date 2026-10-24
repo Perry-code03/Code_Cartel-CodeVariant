@@ -353,7 +353,10 @@ export async function POST(request: Request): Promise<Response> {
   };
 
   // 6. AI call (if AI_API_KEY and AI_MODEL exist, and AI_BASE_URL is allowlisted)
-  const aiApiKey = typeof process !== 'undefined' ? process.env?.AI_API_KEY?.trim() : undefined;
+  const aiApiKey =
+    typeof process !== 'undefined'
+      ? (process.env?.AI_API_KEY || process.env?.GROQ_API_KEY || process.env?.XAI_API_KEY)?.trim()
+      : undefined;
   const aiModel = typeof process !== 'undefined' ? process.env?.AI_MODEL?.trim() : undefined;
   const aiBaseUrl = typeof process !== 'undefined' ? process.env?.AI_BASE_URL?.trim() : undefined;
 

@@ -1,9 +1,26 @@
 import { describe, it, expect } from 'vitest';
-import { queryGraveyardOracle } from '../oracle';
+import { queryGraveyardOracle, buildGraveyardContext } from '../oracle';
 import { getInitialSeedData } from '@/data/seed';
 
 describe('Graveyard Oracle Local Engine', () => {
   const seedData = getInitialSeedData();
+
+  it('builds a safe, sanitized graveyard context for projects', () => {
+    const context = buildGraveyardContext(seedData);
+    expect(context.length).toBe(seedData.projects.length);
+    expect(context[0]).toHaveProperty('name');
+    expect(context[0]).toHaveProperty('status');
+    expect(context[0]).toHaveProperty('completion');
+    expect(context[0]).toHaveProperty('category');
+    expect(context[0]).toHaveProperty('stack');
+  });
+
+  it('answers "hi" or greeting intent warmly with available prompts', () => {
+    const res = queryGraveyardOracle('hi', seedData);
+    expect(res.intent).toBe('greeting');
+    expect(res.answer).toContain('Greetings');
+    expect(res.suggestedFollowUps?.length).toBeGreaterThan(0);
+  });
 
   it('answers "help" intent with available query prompts', () => {
     const res = queryGraveyardOracle('help', seedData);

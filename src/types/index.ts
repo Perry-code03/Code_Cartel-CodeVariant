@@ -115,3 +115,22 @@ export interface RepoAnalysis {
   aiProviderName?: string;
   notice?: string;
 }
+
+export interface GraveyardProjectSummary {
+  name: string;
+  status: Status;
+  completion: number;
+  score?: number;
+  category: Category;
+  stack: string[];
+  stopCategory?: StopCategory;
+}
+
+export interface OracleAiResponse {
+  answer?: string;
+  suggestedFollowUps?: string[];
+  source?: 'ai' | 'local';
+  aiProviderName?: string;
+  fallback?: boolean;
+  notice?: string;
+}
