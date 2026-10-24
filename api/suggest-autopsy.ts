@@ -41,7 +41,13 @@ function resolveAiEndpoint(rawBaseUrl?: string): { url: string; providerName: st
     if (!providerName) {
       return null;
     }
-    const cleanBase = base.replace(/\/+$/, '');
+    let cleanBase = base.replace(/\/+$/, '');
+    if (host === 'api.groq.com' && !cleanBase.includes('/openai/v1')) {
+      cleanBase = `${cleanBase}/openai/v1`;
+    }
+    if (host === 'api.x.ai' && !cleanBase.endsWith('/v1')) {
+      cleanBase = `${cleanBase}/v1`;
+    }
     return {
       url: `${cleanBase}/chat/completions`,
       providerName,
@@ -168,11 +174,17 @@ export async function POST(request: Request): Promise<Response> {
   const localFallback = generateLocalAutopsyFallback(projectData);
 
   // Check AI configuration
-  const aiApiKey =
+  let aiApiKey =
     typeof process !== 'undefined'
       ? (process.env?.AI_API_KEY || process.env?.GROQ_API_KEY || process.env?.XAI_API_KEY)?.trim()
       : undefined;
-  const aiModel = typeof process !== 'undefined' ? process.env?.AI_MODEL?.trim() : undefined;
+  if (aiApiKey) {
+    aiApiKey = aiApiKey.replace(/^["']|["']$/g, '').trim();
+  }
+  let aiModel = typeof process !== 'undefined' ? process.env?.AI_MODEL?.trim() : undefined;
+  if (aiModel) {
+    aiModel = aiModel.replace(/^["']|["']$/g, '').trim();
+  }
   const aiBaseUrl = typeof process !== 'undefined' ? process.env?.AI_BASE_URL?.trim() : undefined;
 
   if (!aiApiKey || !aiModel) {
