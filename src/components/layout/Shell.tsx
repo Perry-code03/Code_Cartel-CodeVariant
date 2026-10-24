@@ -40,6 +40,12 @@ export const Shell: React.FC = () => {
   const [focusedNavIndex, setFocusedNavIndex] = useState<number>(-1);
   const navContainerRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const handleOpenBuryDialog = () => setBuryDialogOpen(true);
+    window.addEventListener('graveyard:open-bury-dialog', handleOpenBuryDialog);
+    return () => window.removeEventListener('graveyard:open-bury-dialog', handleOpenBuryDialog);
+  }, []);
+
   // Toggle and save collapsed state
   const toggleSidebar = useCallback(() => {
     setSidebarCollapsed((prev) => {
