@@ -112,4 +112,6 @@ export interface RepoAnalysis {
   lastPushedAt?: string;
   source: 'github+ai' | 'github-only';
   repoUrl: string;
+  aiProviderName?: string;
+  notice?: string;
 }

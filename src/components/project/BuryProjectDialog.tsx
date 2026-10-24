@@ -391,7 +391,7 @@ export const BuryProjectDialog: React.FC<BuryProjectDialogProps> = ({
                     {suggestion.source === 'github+ai' ? (
                       <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono bg-violet/20 border border-violet/40 text-violet-soft">
                         <Sparkles size={12} />
-                        Suggested from GitHub data + xAI Grok
+                        Suggested from GitHub data + AI ({suggestion.aiProviderName || 'AI'}), please review
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono bg-surface-2 border border-border text-text">
@@ -404,8 +404,15 @@ export const BuryProjectDialog: React.FC<BuryProjectDialogProps> = ({
                     </span>
                   </div>
 
+                  {suggestion.notice && (
+                    <div className="flex items-center gap-2 p-2 rounded bg-amber/10 border border-amber/30 text-amber text-xs font-mono">
+                      <AlertCircle size={14} className="shrink-0" />
+                      <span>{suggestion.notice}</span>
+                    </div>
+                  )}
+
                   <p className="text-[11px] text-muted font-mono leading-relaxed">
-                    Only the public repo URL and metadata are sent. Nothing is stored on our server.
+                    Only the public repo URL and metadata/README excerpts are sent to the AI provider. Nothing is stored on our server.
                   </p>
 
                   <div className="space-y-2 pt-1 border-t border-border/60 text-xs font-mono">

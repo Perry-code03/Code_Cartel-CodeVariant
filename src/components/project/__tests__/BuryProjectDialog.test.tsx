@@ -58,6 +58,7 @@ describe('BuryProjectDialog - GitHub Import', () => {
       category: 'API / Backend',
       lastPushedAt: '2026-02-20T10:00:00.000Z',
       source: 'github+ai',
+      aiProviderName: 'Groq',
       repoUrl: 'https://github.com/owner/awesome-worker',
     });
 
@@ -71,12 +72,12 @@ describe('BuryProjectDialog - GitHub Import', () => {
 
     // Verify honest label appears
     expect(
-      await screen.findByText(/Suggested from GitHub data \+ xAI Grok/)
+      await screen.findByText(/Suggested from GitHub data \+ AI \(Groq\), please review/)
     ).toBeInTheDocument();
 
     // Verify privacy note appears
     expect(
-      screen.getByText(/Only the public repo URL and metadata are sent/)
+      screen.getByText(/Only the public repo URL and metadata\/README excerpts are sent/)
     ).toBeInTheDocument();
 
     // Verify fields in suggestion card
@@ -95,6 +96,33 @@ describe('BuryProjectDialog - GitHub Import', () => {
       const descInput = screen.getByLabelText(/short description/i) as HTMLTextAreaElement;
       expect(descInput.value).toBe('An automated background processing engine.');
     });
+  });
+
+  it('displays notice banner when fallback notice is present', async () => {
+    vi.spyOn(api, 'analyzeRepo').mockResolvedValue({
+      name: 'rate-limited-repo',
+      description: 'Extracted from GitHub only',
+      stack: ['TypeScript'],
+      category: 'Web App',
+      source: 'github-only',
+      notice: 'AI suggestions unavailable right now, showing GitHub data only.',
+      repoUrl: 'https://github.com/owner/rate-limited-repo',
+    });
+
+    renderDialog();
+
+    const input = screen.getByPlaceholderText('https://github.com/owner/repo');
+    fireEvent.change(input, { target: { value: 'https://github.com/owner/rate-limited-repo' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /analyze/i }));
+
+    expect(
+      await screen.findByText('Suggested from GitHub data')
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText('AI suggestions unavailable right now, showing GitHub data only.')
+    ).toBeInTheDocument();
   });
 
   it('dismisses suggestion card without modifying form when Dismiss clicked', async () => {

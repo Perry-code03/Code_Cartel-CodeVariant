@@ -283,13 +283,19 @@ describe('github.ts - validateAnalysisResult', () => {
   };
 
   it('validates a completely valid object', () => {
-    const result = validateAnalysisResult(validData);
+    const result = validateAnalysisResult({
+      ...validData,
+      aiProviderName: 'Groq',
+      notice: 'Test notice',
+    });
     expect(result).not.toBeNull();
     expect(result?.name).toBe('email-worker');
     expect(result?.description).toBe('Background worker queue for email dispatch.');
     expect(result?.stack).toEqual(['Python', 'Celery', 'Redis']);
     expect(result?.category).toBe('API / Backend');
     expect(result?.source).toBe('github+ai');
+    expect(result?.aiProviderName).toBe('Groq');
+    expect(result?.notice).toBe('Test notice');
   });
 
   it('validates stringified JSON and normalizes case-insensitive category', () => {

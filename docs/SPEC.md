@@ -4,7 +4,7 @@ Team Code_Cartel, PS 05. Labels: [PPT] stated in the slides, [REC] recommended, 
 
 ## 1. What it is
 A client-side web app that catalogs abandoned side projects and hackathon repos, diagnoses why they stalled, scores how revivable they are, lets the user choose a revival path, and stores salvaged reusable parts. [PPT]
-Everything stays in the browser (localStorage) by default. No user accounts, no database, no hosted share links, no private repo analysis. One opt-in serverless function (`api/analyze-repo.ts`) enables public GitHub repo metadata normalization via xAI Grok.
+Everything stays in the browser (localStorage) by default; the app is local-first and fully usable offline. Optional backend capabilities run via Vercel serverless functions in `/api`. One opt-in serverless function (`api/analyze-repo.ts`) enables public GitHub repo metadata normalization via a configurable AI provider (e.g. Groq or xAI).
 
 ## 2. Modules [PPT]
 1. **Necropolis Vault**: grid of tombstone cards. Shows status, completion %, Resurrection Score. Filters: stack, category, age, completion %. Entry point "Bury a Project" (includes optional "Import from GitHub" button).
@@ -82,7 +82,7 @@ export interface SalvagedComponent { id: string; projectId: string; name: string
 export type EventKind = 'project_created'|'autopsy_completed'|'path_selected'|'status_changed'|'component_added'|'component_removed'|'project_updated';
 export interface RoadmapEvent { id: string; projectId: string; kind: EventKind; message: string; at: string; meta?: Record<string, string | number>; }
 export interface AppData { schemaVersion: 1; projects: Project[]; components: SalvagedComponent[]; events: RoadmapEvent[]; }
-export interface RepoAnalysis { name: string; description: string; stack: string[]; category: Category; lastPushedAt?: string; source: 'github+ai' | 'github-only'; repoUrl: string; }
+export interface RepoAnalysis { name: string; description: string; stack: string[]; category: Category; lastPushedAt?: string; source: 'github+ai' | 'github-only'; repoUrl: string; aiProviderName?: string; notice?: string; }
 ```
 `pinned` and `isSample` are additions to the earlier model. Timestamps are ISO strings. IDs via `crypto.randomUUID()`; seeds use readable ids like `seed-legacy-auth`.
 
@@ -110,5 +110,9 @@ Write believable descriptions, whatWasBuilt/whatBroke/whyStopped text, lastActiv
 ## 11. Markdown export
 Per project: title, status, completion, score + band + factor breakdown, autopsy summary, selected path details (tasks, pivot, epitaph), roadmap list, salvaged components in fenced code blocks (fence length safely exceeds any backtick run in content). Download via Blob + object URL (`<slug>-graveyard.md`), plus "Copy to clipboard" with fallback. Also "Export all" JSON backup.
 
-## 12. Out of scope (do not build, do not imply)
+## 12. Backend roadmap (Phase 2)
+1. **GitHub Import (built)**: Opt-in public repository intake via `/api/analyze-repo`, with deterministic manifest analysis and optional OpenAI-compatible AI normalization (Groq, xAI).
+2. **Later backend extensions [OPT]**: Optional cloud backup/sync [OPT], hosted authenticated workspace [OPT], component team sharing [OPT]. Claim nothing until built.
+
+## 13. Out of scope (do not build, do not imply)
 Private repo analysis, user accounts, cloud database sync, public marketplace, hosted share links, payments.

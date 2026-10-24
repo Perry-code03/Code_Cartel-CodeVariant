@@ -113,6 +113,6 @@ Open [http://localhost:5173](http://localhost:5173) to enter the Necropolis Vaul
 ---
 
 ## 🔒 Privacy & Local-First Philosophy
-Project Graveyard runs client-side inside the user's browser storage (`localStorage`) with no tracking pixels, no telemetry, no cookies, and no accounts or sync. Your project post-mortems and salvaged snippets remain entirely private on your device.
+Project Graveyard is local-first and fully usable offline, storing your catalog in browser storage (`localStorage`) with no telemetry, no tracking, and no required accounts or sync. Your project post-mortems and salvaged snippets remain entirely private on your device.
 
-**Opt-In GitHub Import Exception**: If you optionally use the "Import from GitHub" feature in the burial dialog, the public repository URL is sent to our serverless endpoint (`api/analyze-repo.ts`), which queries public GitHub API metadata and passes public excerpts to xAI Grok to normalize suggestions. Nothing is stored on our server, private repositories are not supported, and you review and apply all suggestions manually.
+**Opt-In GitHub Import Feature**: When optionally analyzing a public repository, the URL is sent to our serverless endpoint (`api/analyze-repo.ts`), which queries public GitHub API metadata and passes public excerpts to a configured AI provider (such as Groq or xAI) to normalize suggestions. Nothing is stored on our server, private repositories are not supported, and all suggestions are reviewed and confirmed manually.

@@ -350,7 +350,7 @@ export function suggestCategory(stack: string[], languages: string[]): Category 
 }
 
 /**
- * Strictly validates the analysis result returned by xAI Grok or fallback.
+ * Strictly validates the analysis result returned by the AI provider or fallback.
  * Never trusts model output. Returns null if invalid.
  */
 export function validateAnalysisResult(raw: unknown): RepoAnalysis | null {
@@ -410,6 +410,18 @@ export function validateAnalysisResult(raw: unknown): RepoAnalysis | null {
     }
   }
 
+  // 8. aiProviderName: optional string (e.g. 'Groq' | 'xAI')
+  let aiProviderName: string | undefined = undefined;
+  if (typeof candidate.aiProviderName === 'string' && candidate.aiProviderName.trim()) {
+    aiProviderName = candidate.aiProviderName.trim().slice(0, 50);
+  }
+
+  // 9. notice: optional string
+  let notice: string | undefined = undefined;
+  if (typeof candidate.notice === 'string' && candidate.notice.trim()) {
+    notice = candidate.notice.trim().slice(0, 300);
+  }
+
   return {
     name,
     description,
@@ -418,5 +430,7 @@ export function validateAnalysisResult(raw: unknown): RepoAnalysis | null {
     lastPushedAt,
     source,
     repoUrl,
+    aiProviderName,
+    notice,
   };
 }
