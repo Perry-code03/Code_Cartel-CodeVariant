@@ -114,6 +114,7 @@ export interface RepoAnalysis {
   repoUrl: string;
   aiProviderName?: string;
   notice?: string;
+  reason?: string;
 }
 
 export interface GraveyardProjectSummary {
@@ -133,6 +134,7 @@ export interface OracleAiResponse {
   aiProviderName?: string;
   fallback?: boolean;
   notice?: string;
+  reason?: string;
 }
 
 export interface AutopsySuggestion {
@@ -142,4 +144,5 @@ export interface AutopsySuggestion {
   source: 'ai' | 'facts-only';
   aiProviderName?: string;
   notice?: string;
+  reason?: string;
 }

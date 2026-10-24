@@ -80,7 +80,7 @@ export async function chatWithOracle(
   }
 
   if (!response.ok) {
-    const errorObj = data as { error?: string; notice?: string };
+    const errorObj = data as { error?: string; notice?: string; reason?: string };
     const notice =
       errorObj?.notice ||
       errorObj?.error ||
@@ -128,7 +128,7 @@ export async function suggestAutopsy(
   }
 
   if (!response.ok) {
-    const errorObj = data as { error?: string; notice?: string };
+    const errorObj = data as { error?: string; notice?: string; reason?: string };
     const fallback = generateLocalAutopsyFallback(project);
     return {
       ...fallback,
@@ -136,6 +136,7 @@ export async function suggestAutopsy(
         errorObj?.notice ||
         errorObj?.error ||
         'Diagnostic request failed. Showing repository activity facts.',
+      reason: errorObj?.reason || 'provider_error',
     };
   }
 

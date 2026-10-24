@@ -1,4 +1,5 @@
 import { GraveyardProjectSummary, OracleAiResponse } from '../src/types/index.js';
+import { callAiProvider, getOracleFailureNotice } from '../src/lib/ai-provider.js';
 
 // In-memory rate limiting: best-effort on serverless
 const ipRequests = new Map<string, number[]>();
@@ -16,56 +17,6 @@ function checkRateLimit(ip: string): boolean {
   recent.push(now);
   ipRequests.set(ip, recent);
   return true;
-}
-
-const ALLOWED_AI_HOSTS: Record<string, string> = {
-  'api.groq.com': 'Groq',
-  'api.x.ai': 'xAI',
-};
-
-function resolveAiEndpoint(rawBaseUrl?: string): { url: string; providerName: string } | null {
-  const base = (rawBaseUrl || 'https://api.groq.com/openai/v1').trim();
-  try {
-    const parsed = new URL(base);
-    if (parsed.protocol !== 'https:') {
-      return null;
-    }
-    const host = parsed.hostname.toLowerCase();
-    const providerName = ALLOWED_AI_HOSTS[host];
-    if (!providerName) {
-      return null;
-    }
-    let cleanBase = base.replace(/\/+$/, '');
-    if (host === 'api.groq.com' && !cleanBase.includes('/openai/v1')) {
-      cleanBase = `${cleanBase}/openai/v1`;
-    }
-    if (host === 'api.x.ai' && !cleanBase.endsWith('/v1')) {
-      cleanBase = `${cleanBase}/v1`;
-    }
-    return {
-      url: `${cleanBase}/chat/completions`,
-      providerName,
-    };
-  } catch {
-    return null;
-  }
-}
-
-async function fetchWithTimeout(
-  url: string,
-  options: RequestInit = {},
-  timeoutMs = 8000
-): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    });
-  } finally {
-    clearTimeout(timeoutId);
-  }
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -86,6 +37,7 @@ export async function POST(request: Request): Promise<Response> {
       JSON.stringify({
         fallback: true,
         notice: 'Oracle query rate limit reached. Please wait a minute before querying again.',
+        reason: 'rate_limited',
       }),
       { status: 429, headers: { 'Content-Type': 'application/json' } }
     );
@@ -145,51 +97,6 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  // Check AI configuration (support AI_API_KEY with legacy GROQ_API_KEY/XAI_API_KEY fallback)
-  let aiApiKey =
-    typeof process !== 'undefined'
-      ? (process.env?.AI_API_KEY || process.env?.GROQ_API_KEY || process.env?.XAI_API_KEY)?.trim()
-      : undefined;
-  if (aiApiKey) {
-    aiApiKey = aiApiKey.replace(/^["']|["']$/g, '').trim();
-  }
-  let aiModel = typeof process !== 'undefined' ? process.env?.AI_MODEL?.trim() : undefined;
-  if (aiModel) {
-    aiModel = aiModel.replace(/^["']|["']$/g, '').trim();
-  }
-  const aiBaseUrl = typeof process !== 'undefined' ? process.env?.AI_BASE_URL?.trim() : undefined;
-
-  if (!aiApiKey) {
-    return new Response(
-      JSON.stringify({
-        fallback: true,
-        notice: 'AI_API_KEY not configured in .env.local. Using local heuristic engine.',
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
-  }
-
-  if (!aiModel) {
-    return new Response(
-      JSON.stringify({
-        fallback: true,
-        notice: 'AI_MODEL not configured in .env.local (e.g. AI_MODEL=llama-3.3-70b-versatile). Using local heuristic engine.',
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
-  }
-
-  const endpoint = resolveAiEndpoint(aiBaseUrl);
-  if (!endpoint) {
-    return new Response(
-      JSON.stringify({
-        fallback: true,
-        notice: 'AI endpoint not allowlisted. Using local heuristic engine.',
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
-  }
-
   const contextData = Array.isArray(body.graveyardContext)
     ? (body.graveyardContext as GraveyardProjectSummary[]).slice(0, 10)
     : [];
@@ -210,83 +117,50 @@ ${JSON.stringify(contextData)}
 DEVELOPER QUESTION:
 ${message}`;
 
-  try {
-    const aiRes = await fetchWithTimeout(
-      endpoint.url,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${aiApiKey}`,
-        },
-        body: JSON.stringify({
-          model: aiModel,
-          temperature: 0.3,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-        }),
-      },
-      8000
-    );
+  const callResult = await callAiProvider({
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+    temperature: 0.3,
+    jsonMode: false,
+  });
 
-    if (aiRes.ok) {
-      const aiData = (await aiRes.json()) as {
-        choices?: Array<{
-          message?: {
-            content?: string;
-          };
-        }>;
-      };
-
-      const rawContent = aiData.choices?.[0]?.message?.content?.trim();
-      if (rawContent) {
-        // Parse out any FOLLOW_UPS section
-        let mainAnswer = rawContent;
-        const followUps: string[] = [];
-
-        const followUpSplit = rawContent.split(/FOLLOW_UPS:\s*/i);
-        if (followUpSplit.length > 1) {
-          mainAnswer = followUpSplit[0].trim();
-          const followUpLines = followUpSplit[1]
-            .split('\n')
-            .map((line) => line.replace(/^[-*•\d.]\s*/, '').trim())
-            .filter((line) => line.length > 3 && line.length < 80);
-          followUps.push(...followUpLines.slice(0, 3));
-        }
-
-        const responsePayload: OracleAiResponse = {
-          answer: mainAnswer,
-          suggestedFollowUps: followUps.length > 0 ? followUps : undefined,
-          source: 'ai',
-          aiProviderName: endpoint.providerName,
-        };
-
-        return new Response(JSON.stringify(responsePayload), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-    }
-
-    console.error(`[oracle-chat] AI provider ${endpoint.providerName} status: ${aiRes.status}`);
-    // On upstream 401, 429, 500, or invalid content: fall back with notice
+  if (callResult.outcome !== 'ok' || !callResult.rawText) {
+    const { notice, reason } = getOracleFailureNotice(callResult.outcome, callResult.missingVars);
     return new Response(
       JSON.stringify({
         fallback: true,
-        notice: 'AI Oracle unavailable right now. Showing local guidance.',
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
-  } catch {
-    // Timeout or network failure: fall back cleanly
-    return new Response(
-      JSON.stringify({
-        fallback: true,
-        notice: 'AI Oracle connection timed out. Showing local guidance.',
+        notice,
+        reason,
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   }
+
+  // Parse out any FOLLOW_UPS section
+  let mainAnswer = callResult.rawText;
+  const followUps: string[] = [];
+
+  const followUpSplit = callResult.rawText.split(/FOLLOW_UPS:\s*/i);
+  if (followUpSplit.length > 1) {
+    mainAnswer = followUpSplit[0].trim();
+    const followUpLines = followUpSplit[1]
+      .split('\n')
+      .map((line) => line.replace(/^[-*•\d.]\s*/, '').trim())
+      .filter((line) => line.length > 3 && line.length < 80);
+    followUps.push(...followUpLines.slice(0, 3));
+  }
+
+  const responsePayload: OracleAiResponse = {
+    answer: mainAnswer,
+    suggestedFollowUps: followUps.length > 0 ? followUps : undefined,
+    source: 'ai',
+    aiProviderName: callResult.providerName,
+  };
+
+  return new Response(JSON.stringify(responsePayload), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }

@@ -77,7 +77,7 @@ describe('POST /api/oracle-chat', () => {
 
     const data = await res.json();
     expect(data.fallback).toBe(true);
-    expect(data.notice).toContain('AI_API_KEY not configured');
+    expect(data.notice).toContain('missing AI_API_KEY');
   });
 
   it('falls back when AI_MODEL is missing', async () => {
@@ -90,7 +90,7 @@ describe('POST /api/oracle-chat', () => {
 
     const data = await res.json();
     expect(data.fallback).toBe(true);
-    expect(data.notice).toContain('AI_MODEL not configured');
+    expect(data.notice).toContain('missing AI_MODEL');
   });
 
   it('rejects non-allowlisted AI_BASE_URL host with fallback', async () => {
@@ -104,7 +104,7 @@ describe('POST /api/oracle-chat', () => {
 
     const data = await res.json();
     expect(data.fallback).toBe(true);
-    expect(data.notice).toContain('AI endpoint not allowlisted');
+    expect(data.notice).toContain('AI Oracle unavailable right now');
   });
 
   it('successfully returns AI advice and parses follow-up chips with Groq provider', async () => {
@@ -207,7 +207,7 @@ FOLLOW_UPS:
 
     const data = await res.json();
     expect(data.fallback).toBe(true);
-    expect(data.notice).toContain('AI Oracle unavailable right now');
+    expect(data.notice).toContain('The AI provider is rate limiting requests');
 
     // Never leak upstream error messages
     const bodyText = JSON.stringify(data);
@@ -226,6 +226,6 @@ FOLLOW_UPS:
 
     const data = await res.json();
     expect(data.fallback).toBe(true);
-    expect(data.notice).toContain('timed out');
+    expect(data.notice).toContain('The AI request timed out');
   });
 });

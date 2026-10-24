@@ -5,6 +5,11 @@ import {
   computeActivityFacts,
   ProjectContextInput,
 } from '../src/lib/autopsy-ai.js';
+import {
+  callAiProvider,
+  parseAiJson,
+  getAutopsyFailureNotice,
+} from '../src/lib/ai-provider.js';
 
 // In-memory rate limiting: best-effort on serverless
 const ipRequests = new Map<string, number[]>();
@@ -24,56 +29,6 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
-const ALLOWED_AI_HOSTS: Record<string, string> = {
-  'api.groq.com': 'Groq',
-  'api.x.ai': 'xAI',
-};
-
-function resolveAiEndpoint(rawBaseUrl?: string): { url: string; providerName: string } | null {
-  const base = (rawBaseUrl || 'https://api.groq.com/openai/v1').trim();
-  try {
-    const parsed = new URL(base);
-    if (parsed.protocol !== 'https:') {
-      return null;
-    }
-    const host = parsed.hostname.toLowerCase();
-    const providerName = ALLOWED_AI_HOSTS[host];
-    if (!providerName) {
-      return null;
-    }
-    let cleanBase = base.replace(/\/+$/, '');
-    if (host === 'api.groq.com' && !cleanBase.includes('/openai/v1')) {
-      cleanBase = `${cleanBase}/openai/v1`;
-    }
-    if (host === 'api.x.ai' && !cleanBase.endsWith('/v1')) {
-      cleanBase = `${cleanBase}/v1`;
-    }
-    return {
-      url: `${cleanBase}/chat/completions`,
-      providerName,
-    };
-  } catch {
-    return null;
-  }
-}
-
-async function fetchWithTimeout(
-  url: string,
-  options: RequestInit = {},
-  timeoutMs = 8000
-): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    });
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
-
 export async function POST(request: Request): Promise<Response> {
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
@@ -91,6 +46,7 @@ export async function POST(request: Request): Promise<Response> {
     return new Response(
       JSON.stringify({
         notice: 'Diagnostic request limit reached. Showing repository activity facts.',
+        reason: 'rate_limited',
         ...generateLocalAutopsyFallback({ name: 'Project' }),
       }),
       { status: 429, headers: { 'Content-Type': 'application/json' } }
@@ -173,43 +129,6 @@ export async function POST(request: Request): Promise<Response> {
 
   const localFallback = generateLocalAutopsyFallback(projectData);
 
-  // Check AI configuration
-  let aiApiKey =
-    typeof process !== 'undefined'
-      ? (process.env?.AI_API_KEY || process.env?.GROQ_API_KEY || process.env?.XAI_API_KEY)?.trim()
-      : undefined;
-  if (aiApiKey) {
-    aiApiKey = aiApiKey.replace(/^["']|["']$/g, '').trim();
-  }
-  let aiModel = typeof process !== 'undefined' ? process.env?.AI_MODEL?.trim() : undefined;
-  if (aiModel) {
-    aiModel = aiModel.replace(/^["']|["']$/g, '').trim();
-  }
-  const aiBaseUrl = typeof process !== 'undefined' ? process.env?.AI_BASE_URL?.trim() : undefined;
-
-  if (!aiApiKey || !aiModel) {
-    return new Response(
-      JSON.stringify({
-        ...localFallback,
-        activityFacts: facts.allFacts,
-        notice: 'AI key not configured in .env.local. Showing repository activity facts only.',
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
-  }
-
-  const endpoint = resolveAiEndpoint(aiBaseUrl);
-  if (!endpoint) {
-    return new Response(
-      JSON.stringify({
-        ...localFallback,
-        activityFacts: facts.allFacts,
-        notice: 'AI endpoint not allowlisted. Showing repository activity facts only.',
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
-  }
-
   const systemPrompt = `You are a strict, evidence-based code analysis assistant.
 Given verified repository text excerpts (description, README, and notes), summarize ONLY what is explicitly evidenced in the text.
 
@@ -233,83 +152,79 @@ README / Notes Excerpt: ${projectData.readmeExcerpt || 'None provided'}
 
 Extract only claims supported directly by the text above. Return JSON only.`;
 
-  try {
-    const aiRes = await fetchWithTimeout(
-      endpoint.url,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${aiApiKey}`,
-        },
-        body: JSON.stringify({
-          model: aiModel,
-          temperature: 0.1,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-        }),
-      },
-      8000
-    );
+  const callResult = await callAiProvider({
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+    temperature: 0.1,
+    jsonMode: true,
+  });
 
-    if (aiRes.ok) {
-      const aiData = (await aiRes.json()) as {
-        choices?: Array<{
-          message?: {
-            content?: string;
-          };
-        }>;
-      };
-
-      const rawContent = aiData.choices?.[0]?.message?.content?.trim();
-      if (rawContent) {
-        let parsedJson: unknown;
-        try {
-          const cleanJson = rawContent
-            .replace(/^```(?:json)?\s*/i, '')
-            .replace(/\s*```$/i, '')
-            .trim();
-          parsedJson = JSON.parse(cleanJson);
-        } catch {
-          parsedJson = null;
-        }
-
-        const validated = validateAutopsySuggestion(parsedJson, facts.allFacts);
-        if (validated) {
-          const responsePayload: AutopsySuggestion = {
-            ...validated,
-            activityFacts: facts.allFacts,
-            source: 'ai',
-            aiProviderName: endpoint.providerName,
-          };
-          return new Response(JSON.stringify(responsePayload), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
-      }
-    }
-
-    // Fall back cleanly to facts only on upstream error, rate limit, or invalid output
+  if (callResult.outcome !== 'ok' || !callResult.rawText) {
+    const { notice, reason } = getAutopsyFailureNotice(callResult.outcome, callResult.missingVars);
     return new Response(
       JSON.stringify({
         ...localFallback,
         activityFacts: facts.allFacts,
-        notice: 'AI suggestions unavailable. Showing verified repository activity facts only.',
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
-  } catch {
-    // Timeout or network failure: fall back cleanly
-    return new Response(
-      JSON.stringify({
-        ...localFallback,
-        activityFacts: facts.allFacts,
-        notice: 'AI request timed out. Showing verified repository activity facts only.',
+        notice,
+        reason,
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   }
+
+  const parsedJson = parseAiJson(callResult.rawText);
+  if (!parsedJson) {
+    const { notice, reason } = getAutopsyFailureNotice('bad_output');
+    return new Response(
+      JSON.stringify({
+        ...localFallback,
+        activityFacts: facts.allFacts,
+        notice,
+        reason,
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const validated = validateAutopsySuggestion(parsedJson, facts.allFacts);
+  if (!validated) {
+    const { notice, reason } = getAutopsyFailureNotice('bad_output');
+    return new Response(
+      JSON.stringify({
+        ...localFallback,
+        activityFacts: facts.allFacts,
+        notice,
+        reason,
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // If validation leaves BOTH whatWasBuilt and whatBroke empty, do not label as AI
+  if (!validated.whatWasBuilt && !validated.whatBroke) {
+    return new Response(
+      JSON.stringify({
+        ...localFallback,
+        activityFacts: facts.allFacts,
+        source: 'facts-only',
+        notice: 'The AI found nothing in the repository text to suggest.',
+        reason: 'empty_suggestions',
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const responsePayload: AutopsySuggestion = {
+    ...validated,
+    activityFacts: facts.allFacts,
+    source: 'ai',
+    aiProviderName: callResult.providerName,
+  };
+
+  return new Response(JSON.stringify(responsePayload), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
